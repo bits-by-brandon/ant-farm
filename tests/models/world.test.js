@@ -58,4 +58,25 @@ describe("World tile methods", () => {
     world.setTileRaw(3, 4, 0xa); // 1010
     expect(world.getTileProp(3, 4, "entityType")).toBe(10);
   });
+
+  it("sets each tile property", () => {
+    const world = new World(5, 5);
+    world.setTileProp(4, 4, "entityType", 1);
+    world.setTileProp(4, 4, "entityId", 2);
+    world.setTileProp(4, 4, "terrain", 3);
+    world.setTileProp(4, 4, "homeTrail", 4);
+    world.setTileProp(4, 4, "foodTrail", 5);
+
+    expect(world.getTileRaw(4, 4)).toBe(0xb30021); // 101-100-11-00000000001-00001
+  });
+
+  it("gets all tile properties", () => {
+    const world = new World(5, 5);
+    world.setTileProp(4, 4, "entityType", 1);
+    world.setTileProp(4, 4, "entityId", 2);
+    world.setTileProp(4, 4, "terrain", 3);
+    world.setTileProp(4, 4, "homeTrail", 4);
+    world.setTileProp(4, 4, "foodTrail", 5);
+    expect(world.getTile(4, 4)).toEqual([1, 2, 3, 4, 5]);
+  });
 });

@@ -34,8 +34,19 @@ export default class World {
   }
 
   getTileProp(x: number, y: number, property: keyof typeof World.bitScheme) {
+    return World.getBitValue(this.getTileRaw(x, y), property);
+  }
+
+  getTile(x: number, y: number) {
     const tile = this.getTileRaw(x, y);
-    return World.getBitValue(tile, property);
+    const { bitScheme } = World;
+    return [
+      (tile & bitScheme.entityType.mask) >>> bitScheme.entityType.offset, //entityType
+      (tile & bitScheme.entityId.mask) >>> bitScheme.entityId.offset, //entityId
+      (tile & bitScheme.terrain.mask) >>> bitScheme.terrain.offset, //terrain
+      (tile & bitScheme.homeTrail.mask) >>> bitScheme.homeTrail.offset, //homeTrail
+      (tile & bitScheme.foodTrail.mask) >>> bitScheme.foodTrail.offset, //foodTrail
+    ];
   }
 
   setTileProp(
@@ -78,10 +89,10 @@ export default class World {
   }
 
   static bitScheme = {
-    entityType: { length: 4,  offset: 0,  mask: 0xf }, // 1111
-    entityId:   { length: 12, offset: 4,  mask: 0xfff0 }, // 111111111111-0000
-    terrain:    { length: 2,  offset: 16, mask: 0x30000 }, // 11-000000000000-0000
-    homeTrail:  { length: 3,  offset: 18, mask: 0x1c0000 }, // 111-00-000000000000-0000
-    foodTrail:  { length: 3,  offset: 21, mask: 0xe00000 }, // 111-000-00-000000000000-0000
+    entityType: { length: 4, offset: 0, mask: 0xf }, // 1111
+    entityId: { length: 12, offset: 4, mask: 0xfff0 }, // 111111111111-0000
+    terrain: { length: 2, offset: 16, mask: 0x30000 }, // 11-000000000000-0000
+    homeTrail: { length: 3, offset: 18, mask: 0x1c0000 }, // 111-00-000000000000-0000
+    foodTrail: { length: 3, offset: 21, mask: 0xe00000 }, // 111-000-00-000000000000-0000
   } as const;
 }

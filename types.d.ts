@@ -3,7 +3,9 @@ interface Renderable {
   draw(): void;
 }
 
-type Vector = {
+type VectorPair = {
   x: number;
   y: number;
 };
+
+type Noise = (x: number, y: number) => number;
