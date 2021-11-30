@@ -7,9 +7,14 @@
     <title>Vite App</title>
   </head>
   <body>
-    <div id="root">
+    <header class="app-header">
+      <input id="map-upload-input" type="file" accept="image/*">
+    </header>
+    <img src="" alt="" id="img-map" />
+    <main>
       <canvas id="main-canvas" style="border: 1px #333 solid"></canvas>
-    </div>
+    </main>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
