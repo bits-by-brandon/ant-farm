@@ -1,6 +1,5 @@
 import { State } from "../../state";
 import Ant from "../index";
-// import map from "../../../util/map";
 
 export class Returning implements State {
   private parent: Ant;
@@ -12,9 +11,7 @@ export class Returning implements State {
   enter() {
     console.log("returning home");
   }
-  exit() {
-    // No op
-  }
+  exit() {}
 
   update(_delta: number, _step: number) {
     // begin foraging if nothing is held
