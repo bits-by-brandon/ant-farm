@@ -1,3 +1,5 @@
+import Entity from "./entity";
+
 type Tile = number;
 
 export default class World {
@@ -5,10 +7,17 @@ export default class World {
   readonly height: number;
   readonly data: ArrayBuffer;
   readonly grid: Uint32Array;
+  readonly entities: Entity[];
 
-  constructor(width: number, height: number, worldData?: ArrayBuffer) {
+  constructor(
+    width: number,
+    height: number,
+    entities?: Entity[],
+    worldData?: ArrayBuffer
+  ) {
     this.width = width;
     this.height = height;
+    this.entities = entities || [];
 
     // The expected number of bytes in the generated wordData buffer
     const byteLength = width * height * 4;
@@ -95,4 +104,12 @@ export default class World {
     homeTrail: { length: 3, offset: 18, mask: 0x1c0000 }, // 111-00-000000000000-0000
     foodTrail: { length: 3, offset: 21, mask: 0xe00000 }, // 111-000-00-000000000000-0000
   } as const;
+}
+
+export enum TILE_PROPS {
+  "ENTITY_TYPE" = 0,
+  "ENTITY_ID" = 1,
+  "TERRAIN" = 2,
+  "HOME_TRAIL" = 3,
+  "FOOD_TRAIL" = 4,
 }

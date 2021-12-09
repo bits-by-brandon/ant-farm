@@ -12,9 +12,9 @@ uploadButton.addEventListener("change", (event) => {
 
   const reader = new FileReader();
   reader.onload = function () {
-    imageUrlToBuffer(reader.result as string).then((buffer) => {
-      start(buffer);
-    });
+    imageUrlToBuffer(reader.result as string)
+      .then(mapImageBufferToWorld)
+      .then(start);
   };
 
   reader.readAsDataURL(input.files[0]);
@@ -39,4 +39,27 @@ function imageUrlToBuffer(url: string) {
       resolve(buffer);
     };
   });
+}
+
+/**
+ * Converts image buffer data from image format to worldMap format
+ */
+function mapImageBufferToWorld(imgBuff: ArrayBuffer) {
+  // map the rgba color hex value to the map hex value
+  const colorMap = new Map<number, number>([
+    [0xff0000ff, 0x30000], // red -> wall
+    [0xff00ff00, 0x00002], // green -> food
+    [0xffffffff, 0], // white -> empty
+  ]);
+
+  // initialize TypedArrays for image buffer and new empty buffer of the same length
+  const imageArray = new Uint32Array(imgBuff);
+  const worldArray = new Uint32Array(new ArrayBuffer(imgBuff.byteLength));
+
+  // iterate through all pixels, mapping image to map hex values
+  for (let i = 0; i < imageArray.length; i++) {
+    worldArray[i] = colorMap.get(imageArray[i]) || 0;
+  }
+
+  return worldArray.buffer;
 }

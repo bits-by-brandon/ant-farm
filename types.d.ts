@@ -1,6 +1,5 @@
-interface Renderable {
-  update(delta?: number): void;
-  draw(): void;
+interface Updatable {
+  update(delta: number, step: number): void;
 }
 
 type VectorPair = {

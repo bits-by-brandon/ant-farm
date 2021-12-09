@@ -59,4 +59,8 @@ export default class Vector implements VectorPair {
   dot(operand: VectorPair) {
     return this.x * (operand.x || 0) + this.y * (operand.y || 0);
   }
+
+  dist(target: Vector) {
+    return target.copy().sub(this).mag();
+  }
 }
