@@ -28,7 +28,7 @@ export class Foraging implements State {
     const food = this.checkForFood();
     if (food) {
       // turn around
-      this.parent.steerAngle *= Math.PI;
+      this.parent.steerAngle += Math.PI;
       // begin returning the food
       this.takeFood(food);
       this.parent.setState(this.parent.states.returning);
@@ -36,16 +36,11 @@ export class Foraging implements State {
   }
 
   checkForFood(): Food | null {
-    const food = this.parent.world.entities.filter(
-      (e) => e instanceof Food
-    ) as Food[];
+    const food = this.parent.world
+      .nearby(this.parent, this.parent.foodDetectionRange)
+      .filter((e) => e instanceof Food) as Food[];
 
-    for (const f of food) {
-      if (this.parent.pos.dist(f.pos) < this.parent.foodDetectionRange) {
-        return f;
-      }
-    }
-    return null;
+    return food[0] || null;
   }
 
   takeFood(food: Food): void {

@@ -38,6 +38,17 @@ export default class World {
     this.grid = new Uint32Array(this.data);
   }
 
+  nearby(entity: Entity, radius: number): Entity[] {
+    const output: Entity[] = [];
+    for (const candidate of this.entities) {
+      if (candidate === entity) continue;
+      if (entity.pos.dist(candidate.pos) < radius) {
+        output.push(candidate);
+      }
+    }
+    return output;
+  }
+
   getTileRaw(x: number, y: number): Tile {
     return this.grid[y * this.width + x];
   }
@@ -97,12 +108,13 @@ export default class World {
     return (value << offset) | (tile & ~mask);
   }
 
+  // prettier-ignore
   static bitScheme = {
-    entityType: { length: 4, offset: 0, mask: 0xf }, // 1111
-    entityId: { length: 12, offset: 4, mask: 0xfff0 }, // 111111111111-0000
-    terrain: { length: 2, offset: 16, mask: 0x30000 }, // 11-000000000000-0000
-    homeTrail: { length: 3, offset: 18, mask: 0x1c0000 }, // 111-00-000000000000-0000
-    foodTrail: { length: 3, offset: 21, mask: 0xe00000 }, // 111-000-00-000000000000-0000
+    entityType: { length: 4,  offset: 0,  mask: 0b00000000000000000000000000001111 },
+    entityId:   { length: 12, offset: 4,  mask: 0b00000000000000001111111111110000 },
+    terrain:    { length: 2,  offset: 16, mask: 0b00000000000000110000000000000000 },
+    homeTrail:  { length: 3,  offset: 18, mask: 0b00000000000111000000000000000000 },
+    foodTrail:  { length: 3,  offset: 21, mask: 0b00000000111000000000000000000000 },
   } as const;
 }
 

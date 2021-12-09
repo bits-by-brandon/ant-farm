@@ -66,9 +66,7 @@ export default class Ant extends Entity implements StateMachine {
     this.id = id;
     this.speed = 0.5;
     this.nest = nest;
-
     this.held = null;
-
     this.lastPos = new Vector(x, y);
     this.gridPosition = { x, y } as VectorPair;
     this.lastGridPosition = { x, y } as VectorPair;
