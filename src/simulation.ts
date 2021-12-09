@@ -5,6 +5,14 @@ import { AntFactory } from "./models/ant";
 import { ENTITY_TYPE } from "./models/entity";
 import Nest from "./models/nest";
 import Food from "./models/food";
+import { Rectangle } from "./models/quadtree";
+
+const mouseRect = new Rectangle(0, 0, 200, 200);
+
+document.addEventListener("mousemove", (e) => {
+  mouseRect.x = e.x;
+  mouseRect.y = e.y;
+});
 
 export function start(worldBuffer?: ArrayBuffer) {
   const canvasWidth = 1500;
@@ -40,7 +48,7 @@ export function start(worldBuffer?: ArrayBuffer) {
   });
 
   // Create our initial batch of ants
-  const antCount = 50;
+  const antCount = 500;
   const antFactory = new AntFactory(world, noise);
   for (let i = 0; i < antCount; i++) {
     antFactory.create({ x: nest.pos.x, y: nest.pos.y, nest: nest });
@@ -49,6 +57,8 @@ export function start(worldBuffer?: ArrayBuffer) {
   getFood(world, noise);
 
   function update(delta: number, step: number) {
+    world.update();
+
     for (const entity of world.entities) {
       entity.update(delta, step);
     }
@@ -56,7 +66,20 @@ export function start(worldBuffer?: ArrayBuffer) {
 
   function draw() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    for (const entity of world.entities) {
+    // for (const entity of world.entities) {
+    //   entity.draw(ctx);
+    // }
+    world.qtree.draw(ctx);
+
+    ctx.strokeStyle = "#0f0";
+    ctx.strokeRect(
+      mouseRect.x - mouseRect.width,
+      mouseRect.y - mouseRect.height,
+      mouseRect.width * 2,
+      mouseRect.height * 2
+    );
+    const entities = world.qtree.query(mouseRect);
+    for (const entity of entities) {
       entity.draw(ctx);
     }
   }
@@ -78,17 +101,14 @@ export function start(worldBuffer?: ArrayBuffer) {
   requestAnimationFrame(step);
 }
 
-function getFood(world: World, noise: Noise): Food[] {
-  const output: Food[] = [];
+function getFood(world: World, noise: Noise) {
   for (let x = 0; x < world.width; x++) {
     for (let y = 0; y < world.height; y++) {
       const [entityType] = world.getTile(x, y);
       if (entityType === ENTITY_TYPE.FOOD) {
         let food = new Food({ x, y, world, noise });
-        world.entities.push(food);
-        output.push(food);
+        world.insert(food);
       }
     }
   }
-  return output;
 }

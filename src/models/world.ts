@@ -1,4 +1,5 @@
 import Entity from "./entity";
+import Quadtree, { Rectangle } from "./quadtree";
 
 type Tile = number;
 
@@ -8,6 +9,7 @@ export default class World {
   readonly data: ArrayBuffer;
   readonly grid: Uint32Array;
   readonly entities: Entity[];
+  public qtree: Quadtree;
 
   constructor(
     width: number,
@@ -18,6 +20,15 @@ export default class World {
     this.width = width;
     this.height = height;
     this.entities = entities || [];
+    this.qtree = new Quadtree(
+      new Rectangle(
+        this.width / 2,
+        this.height / 2,
+        this.width / 2,
+        this.height / 2
+      ),
+      4
+    );
 
     // The expected number of bytes in the generated wordData buffer
     const byteLength = width * height * 4;
@@ -38,15 +49,38 @@ export default class World {
     this.grid = new Uint32Array(this.data);
   }
 
-  nearby(entity: Entity, radius: number): Entity[] {
-    const output: Entity[] = [];
-    for (const candidate of this.entities) {
-      if (candidate === entity) continue;
-      if (entity.pos.dist(candidate.pos) < radius) {
-        output.push(candidate);
-      }
+  insert(entity: Entity) {
+    this.entities.push(entity);
+    this.qtree.insert(entity);
+  }
+
+  remove(entity: Entity) {
+    const index = this.entities.indexOf(entity);
+    if (index > -1) {
+      this.entities.splice(index, 1);
     }
-    return output;
+  }
+
+  update() {
+    this.qtree.clear();
+    for (const entity of this.entities) {
+      this.qtree.insert(entity);
+    }
+  }
+
+  nearby(entity: Entity, radius: number): Entity[] {
+    return this.qtree.query(
+      new Rectangle(entity.pos.x, entity.pos.y, radius, radius)
+    );
+
+    // const output: Entity[] = [];
+    // for (const candidate of this.entities) {
+    //   if (candidate === entity) continue;
+    //   if (entity.pos.dist(candidate.pos) < radius) {
+    //     output.push(candidate);
+    //   }
+    // }
+    // return output;
   }
 
   getTileRaw(x: number, y: number): Tile {

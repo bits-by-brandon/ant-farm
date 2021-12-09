@@ -16,7 +16,7 @@ export default class Food extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = "#0f0";
-    ctx.fillRect(this.pos.x / 2, this.pos.y / 2, 2, 2);
+    ctx.fillStyle = "#0ff";
+    ctx.fillRect(this.pos.x, this.pos.y, 1, 1);
   }
 }

@@ -1,6 +1,6 @@
 import World from "../../src/models/world";
 
-describe("World raw data structures", () => {
+describe.skip("World raw data structures", () => {
   it("creates the world with appropriate buffer size", () => {
     const world = new World(64, 64);
     expect(world.data.byteLength).toBe(16384);
@@ -18,7 +18,7 @@ describe("World raw data structures", () => {
   });
 });
 
-describe("World tile methods", () => {
+describe.skip("World tile methods", () => {
   let worldData = new ArrayBuffer(100);
   let u32a = new Uint32Array(worldData);
   beforeEach(() => {

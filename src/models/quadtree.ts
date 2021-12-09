@@ -1,5 +1,4 @@
 import Entity from "./entity";
-import Vector from "./vector";
 
 export class Rectangle {
   x: number;
@@ -14,12 +13,12 @@ export class Rectangle {
     this.height = height;
   }
 
-  contains(point: Vector): boolean {
+  contains(point: VectorPair): boolean {
     return (
       point.x >= this.x - this.width &&
-      point.x < this.x + this.width &&
+      point.x <= this.x + this.width &&
       point.y >= this.y - this.height &&
-      point.y > this.y + this.height
+      point.y <= this.y + this.height
     );
   }
 
@@ -35,13 +34,13 @@ export class Rectangle {
 
 export default class Quadtree {
   private boundary: Rectangle;
+  private points: Entity[];
   private nw: Quadtree | null;
   private ne: Quadtree | null;
   private sw: Quadtree | null;
   private se: Quadtree | null;
   private divided: boolean;
   readonly capacity: number;
-  readonly points: Entity[];
 
   constructor(boundary: Rectangle, capacity: number) {
     this.boundary = boundary;
@@ -64,12 +63,11 @@ export default class Quadtree {
       if (!this.divided) this.subdivide();
 
       // Try inserting into a subtree, return true if any inserts are successful
-      return !!(
-        this.ne?.insert(point) ||
-        this.nw?.insert(point) ||
-        this.se?.insert(point) ||
-        this.sw?.insert(point)
-      );
+      if (this.sw?.insert(point)) return true;
+      if (this.se?.insert(point)) return true;
+      if (this.ne?.insert(point)) return true;
+      if (this.nw?.insert(point)) return true;
+      return false;
     }
   }
 
@@ -94,6 +92,15 @@ export default class Quadtree {
     );
   }
 
+  clear(): void {
+    this.nw = null;
+    this.ne = null;
+    this.sw = null;
+    this.se = null;
+    this.points = [];
+    this.divided = false;
+  }
+
   query(range: Rectangle, found: Entity[] = []): Entity[] {
     if (!this.boundary.intersects(range)) return found;
 
@@ -111,5 +118,15 @@ export default class Quadtree {
     }
 
     return found;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    const { x, y, width, height } = this.boundary;
+    ctx.strokeStyle = "#666";
+    ctx.strokeRect(x - width, y - height, width * 2, height * 2);
+    if (this.nw) this.nw.draw(ctx);
+    if (this.ne) this.ne.draw(ctx);
+    if (this.sw) this.sw.draw(ctx);
+    if (this.se) this.se.draw(ctx);
   }
 }

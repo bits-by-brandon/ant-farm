@@ -29,8 +29,9 @@ export class Foraging implements State {
     if (food) {
       // turn around
       this.parent.steerAngle += Math.PI;
-      // begin returning the food
-      this.takeFood(food);
+      this.parent.held = food;
+      this.parent.world.remove(food);
+      // start returning with the food
       this.parent.setState(this.parent.states.returning);
     }
   }
@@ -41,21 +42,6 @@ export class Foraging implements State {
       .filter((e) => e instanceof Food) as Food[];
 
     return food[0] || null;
-  }
-
-  takeFood(food: Food): void {
-    // Hold the food
-    this.parent.held = food;
-
-    // Remove the food from the world
-    const index = this.parent.world.entities.indexOf(food);
-    if (index > -1) {
-      this.parent.world.entities.splice(index, 1);
-    }
-  }
-
-  setDirection(delta: number, step: number) {
-    this.turnRandomDirection(delta, step);
   }
 
   turnRandomDirection(delta: number, step: number) {

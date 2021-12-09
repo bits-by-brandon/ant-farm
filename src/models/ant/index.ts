@@ -78,7 +78,7 @@ export default class Ant extends Entity implements StateMachine {
     this.wiggleVariance = 0.0001;
     this.turnChance = 0.01; // normalized percentage, once per step
     this.turnRange = 1;
-    this.foodDetectionRange = 2;
+    this.foodDetectionRange = 5;
 
     this.states = {
       foraging: new Foraging(this),
@@ -101,7 +101,7 @@ export default class Ant extends Entity implements StateMachine {
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.held ? "#f00" : "#000";
-    ctx.fillRect(this.pos.x / 2, this.pos.y / 2, 2, 2);
+    ctx.fillRect(this.pos.x, this.pos.y, 1, 1);
   }
 
   updatePosition() {
@@ -221,7 +221,7 @@ export class AntFactory {
   create(args: AntFactoryCreateArgs) {
     const { x, y, nest } = args;
     const ant = new Ant(x, y, this.index, nest, this.world, this.noise);
-    this.world.entities.push(ant);
+    this.world.insert(ant);
     this.index++;
     return ant;
   }
