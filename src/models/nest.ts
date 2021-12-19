@@ -11,6 +11,8 @@ interface NestConstructor {
 }
 
 export default class Nest extends Entity {
+  static type = "Nest";
+
   public readonly id: number;
 
   constructor(args: NestConstructor) {

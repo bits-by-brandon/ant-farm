@@ -12,6 +12,8 @@ export default abstract class Entity implements Updatable {
     this.noise = noise;
   }
 
+  static type = "GenericEntity";
+
   update(_delta: number, _step: number) {}
   draw(_ctx: CanvasRenderingContext2D) {}
 }

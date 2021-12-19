@@ -21,7 +21,6 @@ export class Foraging implements State {
     this.turnRandomDirection(delta, step);
     this.parent.updatePosition();
     this.parent.mapEdgeCollide();
-    // this.parent.terrainCollide();
     this.parent.updateGridPosition();
 
     // Check if food shares tile with ant, if so:
@@ -37,9 +36,11 @@ export class Foraging implements State {
   }
 
   checkForFood(): Food | null {
-    const food = this.parent.world
-      .nearby(this.parent, this.parent.foodDetectionRange)
-      .filter((e) => e instanceof Food) as Food[];
+    const food = this.parent.world.nearby(
+      this.parent,
+      this.parent.foodDetectionRange,
+      "Food"
+    );
 
     return food[0] || null;
   }

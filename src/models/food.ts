@@ -10,6 +10,8 @@ interface FoodConstructor {
 }
 
 export default class Food extends Entity {
+  static type = "Food";
+
   constructor(args: FoodConstructor) {
     const { x, y, world, noise } = args;
     super(new Vector(x, y), world, noise);

@@ -37,6 +37,8 @@ interface AntFactoryCreateArgs {
 }
 
 export default class Ant extends Entity implements StateMachine {
+  static type = "Ant";
+
   readonly id: number;
   readonly nest: Nest;
   held: Entity | null;
@@ -78,7 +80,7 @@ export default class Ant extends Entity implements StateMachine {
     this.wiggleVariance = 0.0001;
     this.turnChance = 0.01; // normalized percentage, once per step
     this.turnRange = 1;
-    this.foodDetectionRange = 5;
+    this.foodDetectionRange = 2;
 
     this.states = {
       foraging: new Foraging(this),
@@ -221,7 +223,7 @@ export class AntFactory {
   create(args: AntFactoryCreateArgs) {
     const { x, y, nest } = args;
     const ant = new Ant(x, y, this.index, nest, this.world, this.noise);
-    this.world.insert(ant);
+    this.world.insert(ant, "Ant");
     this.index++;
     return ant;
   }

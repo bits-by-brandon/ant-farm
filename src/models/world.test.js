@@ -1,4 +1,4 @@
-import World from "../../src/models/world";
+import World from "./world";
 
 describe.skip("World raw data structures", () => {
   it("creates the world with appropriate buffer size", () => {

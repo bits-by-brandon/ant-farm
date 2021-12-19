@@ -26,8 +26,8 @@ export class Rectangle {
     return !(
       range.x - range.width > this.x + this.width ||
       range.x + range.width < this.x - this.width ||
-      range.y - range.height > this.x + this.height ||
-      range.y + range.height < this.x - this.height
+      range.y - range.height > this.y + this.height ||
+      range.y + range.height < this.y - this.height
     );
   }
 }
@@ -59,21 +59,38 @@ export default class Quadtree {
     if (this.points.length < this.capacity) {
       this.points.push(point);
       return true;
-    } else {
-      if (!this.divided) this.subdivide();
-
-      // Try inserting into a subtree, return true if any inserts are successful
-      if (this.sw?.insert(point)) return true;
-      if (this.se?.insert(point)) return true;
-      if (this.ne?.insert(point)) return true;
-      if (this.nw?.insert(point)) return true;
-      return false;
     }
+
+    if (!this.divided) this.subdivide();
+
+    // Try inserting into a subtree, return true if any inserts are successful
+    return (
+      this.sw!.insert(point) ||
+      this.se!.insert(point) ||
+      this.ne!.insert(point) ||
+      this.nw!.insert(point)
+    );
+  }
+
+  remove(target: Entity): Entity | false {
+    if (!this.boundary.contains(target.pos)) return false;
+
+    const index = this.points.indexOf(target);
+    if (index !== -1) {
+      this.points.splice(index, 1);
+      return target;
+    }
+
+    return (
+      this.sw!.remove(target) ||
+      this.se!.remove(target) ||
+      this.ne!.remove(target) ||
+      this.nw!.remove(target)
+    );
   }
 
   subdivide() {
     const { x, y, width, height } = this.boundary;
-    this.divided = true;
     this.nw = new Quadtree(
       new Rectangle(x - width / 2, y - width / 2, width / 2, height / 2),
       this.capacity
@@ -90,6 +107,7 @@ export default class Quadtree {
       new Rectangle(x + width / 2, y + width / 2, width / 2, height / 2),
       this.capacity
     );
+    this.divided = true;
   }
 
   clear(): void {
@@ -111,10 +129,10 @@ export default class Quadtree {
     }
 
     if (this.divided) {
-      this.nw?.query(range, found);
-      this.ne?.query(range, found);
-      this.sw?.query(range, found);
-      this.se?.query(range, found);
+      this.nw!.query(range, found);
+      this.ne!.query(range, found);
+      this.sw!.query(range, found);
+      this.se!.query(range, found);
     }
 
     return found;

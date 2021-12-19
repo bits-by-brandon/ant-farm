@@ -2,6 +2,9 @@ import Entity from "./entity";
 import Quadtree, { Rectangle } from "./quadtree";
 
 type Tile = number;
+type Layer = { entities: Set<Entity>; qtree: Quadtree };
+const quadtreeCapacity = 4;
+const DEFAULT_LAYER_ID = "DEFAULT";
 
 export default class World {
   readonly width: number;
@@ -9,7 +12,8 @@ export default class World {
   readonly data: ArrayBuffer;
   readonly grid: Uint32Array;
   readonly entities: Entity[];
-  public qtree: Quadtree;
+  // readonly terrainData: Uint8Array;
+  public entityLayers: Map<string, Layer>;
 
   constructor(
     width: number,
@@ -20,15 +24,7 @@ export default class World {
     this.width = width;
     this.height = height;
     this.entities = entities || [];
-    this.qtree = new Quadtree(
-      new Rectangle(
-        this.width / 2,
-        this.height / 2,
-        this.width / 2,
-        this.height / 2
-      ),
-      4
-    );
+    this.entityLayers = new Map<string, Layer>();
 
     // The expected number of bytes in the generated wordData buffer
     const byteLength = width * height * 4;
@@ -49,38 +45,87 @@ export default class World {
     this.grid = new Uint32Array(this.data);
   }
 
-  insert(entity: Entity) {
+  /**
+   * Insert an entity into the world layer system.
+   * If no layerId is provided, the entity will be placed in the default layer.
+   * If the given layerId does not match any existing layer, a new layer will be created.
+   *
+   * @param entity - Entity to be inserted into a layer
+   * @param layerId - [optional] ID of layer to insert
+   */
+  insert(entity: Entity, layerId = DEFAULT_LAYER_ID) {
+    let layer = this.entityLayers.get(layerId);
+    if (!layer) {
+      // If no existing layer is found, initialize a new layer
+      const entities: Set<Entity> = new Set<Entity>();
+      const qtree = new Quadtree(
+        new Rectangle(
+          this.width / 2,
+          this.height / 2,
+          this.width / 2,
+          this.height / 2
+        ),
+        quadtreeCapacity
+      );
+
+      layer = { entities, qtree };
+      this.entityLayers.set(layerId, layer);
+    }
+
+    layer.entities.add(entity);
+    layer.qtree.insert(entity);
     this.entities.push(entity);
-    this.qtree.insert(entity);
   }
 
-  remove(entity: Entity) {
+  remove(entity: Entity, layerId = DEFAULT_LAYER_ID): Entity | null {
+    // Remove the entry from the full entity list
     const index = this.entities.indexOf(entity);
     if (index > -1) {
       this.entities.splice(index, 1);
     }
+
+    // Remove the entry from the qtree layers
+    const layer = this.entityLayers.get(layerId);
+    if (!layer) return null;
+
+    layer.qtree.remove(entity);
+    layer.entities.delete(entity);
+    return entity;
   }
 
   update() {
-    this.qtree.clear();
-    for (const entity of this.entities) {
-      this.qtree.insert(entity);
+    for (const layer of this.entityLayers.values()) {
+      layer.qtree.clear();
+      for (const entity of layer.entities) {
+        layer.qtree.insert(entity);
+      }
     }
   }
 
-  nearby(entity: Entity, radius: number): Entity[] {
-    return this.qtree.query(
-      new Rectangle(entity.pos.x, entity.pos.y, radius, radius)
-    );
+  /**
+   *  Each layer contains a set of all entities in that layer, and a
+   *  quadtree spacial map for quick querying.
+   * @param range
+   * @param layerId
+   */
+  query(range: Rectangle, layerId = DEFAULT_LAYER_ID) {
+    if (layerId === "ALL") {
+      const found: Entity[] = [];
+      for (const layer of this.entityLayers.values()) {
+        found.push(...layer.qtree.query(range));
+      }
+      return found;
+    }
 
-    // const output: Entity[] = [];
-    // for (const candidate of this.entities) {
-    //   if (candidate === entity) continue;
-    //   if (entity.pos.dist(candidate.pos) < radius) {
-    //     output.push(candidate);
-    //   }
-    // }
-    // return output;
+    const layer = this.entityLayers.get(layerId);
+    return layer?.qtree.query(range) || [];
+  }
+
+  nearby(entity: Entity, radius: number, layerId = DEFAULT_LAYER_ID): Entity[] {
+    return this.query(
+      new Rectangle(entity.pos.x, entity.pos.y, radius, radius),
+      layerId
+    );
   }
 
   getTileRaw(x: number, y: number): Tile {
