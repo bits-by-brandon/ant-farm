@@ -21,6 +21,7 @@ export class Returning implements State {
     }
 
     this.parent.updatePosition();
+    this.parent.terrainCollide();
     this.parent.mapEdgeCollide();
     this.parent.updateGridPosition();
   }

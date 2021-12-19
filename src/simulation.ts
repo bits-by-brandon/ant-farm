@@ -1,11 +1,11 @@
 import { makeNoise2D } from "fast-simplex-noise";
 
 import World from "./models/world";
-import { AntFactory } from "./models/ant";
-import { ENTITY_TYPE } from "./models/entity";
 import Nest from "./models/nest";
-import Food from "./models/food";
-import ImageHelper from "./lib/image-helper";
+import { AntFactory } from "./models/ant";
+import { FoodFactory } from "./models/food";
+import MapHelper from "./lib/map-helper";
+import { imageColorMap } from "./config";
 
 interface SimulationCreateProps {
   antCount: number;
@@ -16,11 +16,13 @@ interface SimulationCreateProps {
 interface SimulationProps extends SimulationCreateProps {
   world: World;
   noise: Noise;
+  terrainBitmap: ImageBitmap;
 }
 
 export default class Simulation {
   readonly antCount: number;
   readonly ctx: CanvasRenderingContext2D;
+  readonly terrainBitmap: ImageBitmap;
   readonly width: number;
   readonly height: number;
   readonly world: World;
@@ -33,26 +35,52 @@ export default class Simulation {
     this.antCount = props.antCount;
     this.width = props.width;
     this.height = props.height;
-    this.ctx = this.getCanvasContext(this.width, this.height);
+    this.ctx = this.getCanvasContext();
+    this.terrainBitmap = props.terrainBitmap;
     this.world = props.world;
     this.noise = props.noise;
-    // Step function
     this.lastStamp = 0;
     this.stepCount = 0;
     this.raf = 0;
   }
 
-  getCanvasContext(width: number, height: number): CanvasRenderingContext2D {
+  getCanvasContext(): CanvasRenderingContext2D {
     // canvas setup
     const canvas = document.getElementById("main-canvas") as HTMLCanvasElement;
-    canvas.width = width;
-    canvas.height = height;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    canvas.width = this.width;
+    canvas.height = this.height;
+    canvas.style.width = `${this.width}px`;
+    canvas.style.height = `${this.height}px`;
 
     const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
     if (!ctx) throw new Error("No 2d canvas context available");
     return ctx;
+  }
+
+  getTerrainCanvas(): ImageBitmapRenderingContext {
+    if (window.OffscreenCanvas) {
+      const canvas = new OffscreenCanvas(this.width, this.height);
+      const context = canvas.getContext("bitmaprenderer");
+      if (!context) {
+        throw new Error(
+          "Error while creating the bitmaprenderer context from OffscreenCanvas"
+        );
+      }
+      return context;
+    } else {
+      const canvas = document.getElementById(
+        "main-canvas"
+      ) as HTMLCanvasElement;
+      canvas.width = this.width;
+      canvas.height = this.height;
+      const context = canvas.getContext("bitmaprenderer");
+      if (!context) {
+        throw new Error(
+          "Error while creating the bitmaprenderer context from Canvas"
+        );
+      }
+      return context;
+    }
   }
 
   createNest(): Nest {
@@ -65,24 +93,26 @@ export default class Simulation {
     });
   }
 
+  /**
+   * Create an initial batch of ants and insert them into the world
+   */
   initializeAnts(nest: Nest): void {
-    // Create our initial batch of ants
     const antFactory = new AntFactory(this.world, this.noise);
     for (let i = 0; i < this.antCount; i++) {
       antFactory.create({ x: nest.pos.x, y: nest.pos.y, nest: nest });
     }
   }
 
-  initializeFood() {
+  /**
+   * Create an initial batch of food based on the provided foodData buffer and insert them into the world
+   */
+  initializeFood(foodData: Uint8Array) {
+    const foodFactory = new FoodFactory(this.world, this.noise);
+
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
-        const [entityType] = this.world.getTile(x, y);
-        if (entityType === ENTITY_TYPE.FOOD) {
-          this.world.insert(
-            new Food({ x, y, world: this.world, noise: this.noise }),
-            "Food"
-          );
-        }
+        const foodValue = foodData[y * this.width + x];
+        if (foodValue > 1) foodFactory.create({ x, y });
       }
     }
   }
@@ -97,6 +127,10 @@ export default class Simulation {
 
   _draw() {
     this.ctx.clearRect(0, 0, this.width, this.height);
+
+    // Draw the terrain
+    this.ctx.drawImage(this.terrainBitmap, 0, 0, this.width, this.height);
+
     for (const entity of this.world.entities) {
       entity.draw(this.ctx);
     }
@@ -113,28 +147,49 @@ export default class Simulation {
     this.raf = requestAnimationFrame(this.step.bind(this));
   }
 
+  /**
+   * Starts the simulation. Attempts to runs a per animation frame
+   */
   start() {
     this.raf = requestAnimationFrame(this.step.bind(this));
   }
 
+  /**
+   * Stops the simulation. Run start() to restart simulation
+   */
   stop() {
     cancelAnimationFrame(this.raf);
   }
 
+  /**
+   * Creates and initializes a new Simulation object
+   */
   static async create(
     mapBuffer: ArrayBuffer,
     props: SimulationCreateProps
   ): Promise<Simulation> {
-    // Create the world buffer
-    const colorMap = new Map<number, number>([
-      [0xff0000ff, 0x30000], // red -> wall
-      [0xff00ff00, 0x00002], // green -> food
-      [0xffffffff, 0], // white -> empty
+
+    // TODO: Something went weird after converting the Uint32Array to Uint8Array
+    const mapData = new Uint8Array(mapBuffer);
+    const [terrainData, foodData] = MapHelper.mapWorldDataToLayers(mapData, [
+      imageColorMap.Wall,
+      imageColorMap.Food,
     ]);
-    const worldBuffer = await ImageHelper.mapImageBuffer(mapBuffer, colorMap);
+
+    // Create the terrainBitmap as the draw layer
+    const terrainBitmap = await MapHelper.terrainDataToBitmap(
+      terrainData,
+      props.width,
+      props.height
+    );
 
     // Init world
-    const world = new World(props.width, props.height, [], worldBuffer);
+    const world = new World({
+      width: props.width,
+      height: props.height,
+      entities: [],
+      terrainData,
+    });
 
     // Init perlin noise
     const noise: Noise = makeNoise2D();
@@ -146,12 +201,13 @@ export default class Simulation {
       height: props.height,
       world,
       noise,
+      terrainBitmap,
     });
 
     // Initialize simulation
     const nest = simulation.createNest();
     simulation.initializeAnts(nest);
-    simulation.initializeFood();
+    simulation.initializeFood(foodData);
 
     return simulation;
   }

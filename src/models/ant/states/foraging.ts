@@ -20,6 +20,7 @@ export class Foraging implements State {
   update(delta: number, step: number) {
     this.turnRandomDirection(delta, step);
     this.parent.updatePosition();
+    this.parent.terrainCollide();
     this.parent.mapEdgeCollide();
     this.parent.updateGridPosition();
 

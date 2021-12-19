@@ -2,47 +2,49 @@ import Entity from "./entity";
 import Quadtree, { Rectangle } from "./quadtree";
 
 type Tile = number;
-type Layer = { entities: Set<Entity>; qtree: Quadtree };
+type EntityLayer = { entities: Set<Entity>; qtree: Quadtree };
+type MapDataLayer = Uint8Array;
+
 const quadtreeCapacity = 4;
 const DEFAULT_LAYER_ID = "DEFAULT";
+
+interface ConstructorParams {
+  width: number;
+  height: number;
+  entities?: Entity[];
+  terrainData: MapDataLayer;
+}
 
 export default class World {
   readonly width: number;
   readonly height: number;
-  readonly data: ArrayBuffer;
-  readonly grid: Uint32Array;
   readonly entities: Entity[];
-  // readonly terrainData: Uint8Array;
-  public entityLayers: Map<string, Layer>;
+  readonly terrainData: MapDataLayer;
+  public entityLayers: Map<string, EntityLayer>;
 
-  constructor(
-    width: number,
-    height: number,
-    entities?: Entity[],
-    worldData?: ArrayBuffer
-  ) {
+  constructor({
+    width,
+    height,
+    entities,
+    terrainData,
+  }: ConstructorParams) {
     this.width = width;
     this.height = height;
     this.entities = entities || [];
-    this.entityLayers = new Map<string, Layer>();
+    this.entityLayers = new Map<string, EntityLayer>();
 
+    this.validateMapLayer(terrainData);
+    this.terrainData = terrainData;
+  }
+
+  validateMapLayer(layer: MapDataLayer) {
     // The expected number of bytes in the generated wordData buffer
-    const byteLength = width * height * 4;
-
-    // Initialize the worldData
-    if (worldData) {
-      if (worldData.byteLength !== byteLength) {
-        throw new Error(
-          "Provided buffer is not the right size. Provide a buffer of size"
-        );
-      }
-      this.data = worldData;
-    } else {
-      this.data = new ArrayBuffer(byteLength);
+    const byteLength = this.width * this.height * 4;
+    if (layer.byteLength !== byteLength) {
+      throw new Error(
+        "Provided buffer is not the right size. Provide a buffer of size"
+      );
     }
-
-    // Create the Uint32Array to access the data buffer
-    this.grid = new Uint32Array(this.data);
   }
 
   /**
@@ -128,38 +130,8 @@ export default class World {
     );
   }
 
-  getTileRaw(x: number, y: number): Tile {
-    return this.grid[y * this.width + x];
-  }
-
-  getTileProp(x: number, y: number, property: keyof typeof World.bitScheme) {
-    return World.getBitValue(this.getTileRaw(x, y), property);
-  }
-
-  getTile(x: number, y: number) {
-    const tile = this.getTileRaw(x, y);
-    const { bitScheme } = World;
-    return [
-      (tile & bitScheme.entityType.mask) >>> bitScheme.entityType.offset, //entityType
-      (tile & bitScheme.entityId.mask) >>> bitScheme.entityId.offset, //entityId
-      (tile & bitScheme.terrain.mask) >>> bitScheme.terrain.offset, //terrain
-      (tile & bitScheme.homeTrail.mask) >>> bitScheme.homeTrail.offset, //homeTrail
-      (tile & bitScheme.foodTrail.mask) >>> bitScheme.foodTrail.offset, //foodTrail
-    ];
-  }
-
-  setTileProp(
-    x: number,
-    y: number,
-    property: keyof typeof World.bitScheme,
-    value: number
-  ) {
-    const tile = this.getTileRaw(x, y);
-    this.setTileRaw(x, y, World.setBitValue(tile, property, value));
-  }
-
-  setTileRaw(x: number, y: number, value: number) {
-    this.grid[y * this.width + x] = value;
+  getTerrainValue(x: number, y: number) {
+    return this.terrainData[y * this.width + x];
   }
 
   /**

@@ -1,34 +1,34 @@
-import Entity, { ENTITY_TYPE } from "../entity";
-import World, { TILE_PROPS } from "../world";
+import Entity from "../entity";
+import World from "../world";
 import Nest from "../nest";
 import Vector from "../vector";
 import { State, StateMachine } from "../state";
 import { Foraging } from "./states/foraging";
 import getRandomNumber from "../../util/get-random-number";
 import { clamp } from "../../util/clamp";
-import {
-  EAST,
-  NORTH,
-  NORTH_EAST,
-  NORTH_WEST,
-  SOUTH,
-  SOUTH_EAST,
-  SOUTH_WEST,
-  WEST,
-} from "../../util/unit-circle";
+// import {
+//   EAST,
+//   NORTH,
+//   NORTH_EAST,
+//   NORTH_WEST,
+//   SOUTH,
+//   SOUTH_EAST,
+//   SOUTH_WEST,
+//   WEST,
+// } from "../../util/unit-circle";
 import { Returning } from "./states/returning";
 
 export type Theta = number;
-export type SearchSpace = [
-  [Theta, ENTITY_TYPE],
-  [Theta, ENTITY_TYPE],
-  [Theta, ENTITY_TYPE],
-  [Theta, ENTITY_TYPE],
-  [Theta, ENTITY_TYPE],
-  [Theta, ENTITY_TYPE],
-  [Theta, ENTITY_TYPE],
-  [Theta, ENTITY_TYPE]
-];
+// export type SearchSpace = [
+//   [Theta, ENTITY_TYPE],
+//   [Theta, ENTITY_TYPE],
+//   [Theta, ENTITY_TYPE],
+//   [Theta, ENTITY_TYPE],
+//   [Theta, ENTITY_TYPE],
+//   [Theta, ENTITY_TYPE],
+//   [Theta, ENTITY_TYPE],
+//   [Theta, ENTITY_TYPE]
+// ];
 
 interface AntFactoryCreateArgs {
   x: number;
@@ -97,8 +97,6 @@ export default class Ant extends Entity implements StateMachine {
 
   update(delta: number, step: number) {
     this.state.update(delta, step);
-    // Use any new calculated grid positions from update() and reflect changes in the world grid
-    this.updateWorldPos();
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -127,29 +125,6 @@ export default class Ant extends Entity implements StateMachine {
     }
   }
 
-  updateWorldPos() {
-    // If the ant is in a new grid position
-    if (this.posDirtyBit) {
-      // set the old tile to empty
-      this.world.setTileProp(
-        this.lastGridPosition.x,
-        this.lastGridPosition.y,
-        "entityType",
-        ENTITY_TYPE.EMPTY
-      );
-
-      // set the new tile to contain the ant
-      this.world.setTileProp(
-        this.gridPosition.x,
-        this.gridPosition.y,
-        "entityType",
-        ENTITY_TYPE.ANT
-      );
-
-      this.posDirtyBit = false;
-    }
-  }
-
   /**
    * Clamps ants to the edge of the map and reflects their direction
    */
@@ -170,12 +145,12 @@ export default class Ant extends Entity implements StateMachine {
    * Terrain detection
    */
   terrainCollide() {
-    const tile = this.world.getTile(
+    const terrainValue = this.world.getTerrainValue(
       Math.floor(this.pos.x),
       Math.floor(this.pos.y)
     );
 
-    if (tile[TILE_PROPS.TERRAIN] > 0) {
+    if (terrainValue > 0) {
       this.pos.x = this.lastPos.x;
       this.pos.y = this.lastPos.y;
       this.steerAngle *= Math.PI;
@@ -185,28 +160,28 @@ export default class Ant extends Entity implements StateMachine {
   /**
    * Return an array of [theta, entityType] tuples of all surrounding world tiles starting from the north west block.
    */
-  search(): SearchSpace {
-    // create array of search tiles relative to current position
-    return [
-      [NORTH_WEST, -1, -1],
-      [NORTH, 0, -1],
-      [NORTH_EAST, 1, -1],
-      [WEST, -1, 0],
-      [EAST, 1, 0],
-      [SOUTH_WEST, -1, 1],
-      [SOUTH, 0, 1],
-      [SOUTH_EAST, 1, 1],
-    ].map(([theta, xOffset, yOffset]) => {
-      return [
-        this.world.getTileProp(
-          this.gridPosition.x + xOffset,
-          this.gridPosition.y + yOffset,
-          "entityType"
-        ),
-        theta,
-      ];
-    }) as SearchSpace;
-  }
+  // search(): SearchSpace {
+  //   // create array of search tiles relative to current position
+  //   return [
+  //     [NORTH_WEST, -1, -1],
+  //     [NORTH, 0, -1],
+  //     [NORTH_EAST, 1, -1],
+  //     [WEST, -1, 0],
+  //     [EAST, 1, 0],
+  //     [SOUTH_WEST, -1, 1],
+  //     [SOUTH, 0, 1],
+  //     [SOUTH_EAST, 1, 1],
+  //   ].map(([theta, xOffset, yOffset]) => {
+  //     return [
+  //       this.world.getTileProp(
+  //         this.gridPosition.x + xOffset,
+  //         this.gridPosition.y + yOffset,
+  //         "entityType"
+  //       ),
+  //       theta,
+  //     ];
+  //   }) as SearchSpace;
+  // }
 }
 
 export class AntFactory {

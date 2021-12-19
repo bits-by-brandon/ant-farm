@@ -30,20 +30,4 @@ export default abstract class ImageHelper {
       };
     });
   }
-
-  /**
-   * Maps image buffer data from one set of colors to another based on provided imageMap
-   */
-  static mapImageBuffer(imgBuff: ArrayBuffer, valueMap: Map<number, number>) {
-    // initialize TypedArrays for image buffer and new empty buffer of the same length
-    const imageArray = new Uint32Array(imgBuff);
-    const worldArray = new Uint32Array(new ArrayBuffer(imgBuff.byteLength));
-
-    // iterate through all pixels, mapping image to map hex values
-    for (let i = 0; i < imageArray.length; i++) {
-      worldArray[i] = valueMap.get(imageArray[i]) || 0;
-    }
-
-    return worldArray.buffer;
-  }
 }
