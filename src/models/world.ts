@@ -22,12 +22,7 @@ export default class World {
   readonly terrainData: MapDataLayer;
   public entityLayers: Map<string, EntityLayer>;
 
-  constructor({
-    width,
-    height,
-    entities,
-    terrainData,
-  }: ConstructorParams) {
+  constructor({ width, height, entities, terrainData }: ConstructorParams) {
     this.width = width;
     this.height = height;
     this.entities = entities || [];
@@ -131,7 +126,7 @@ export default class World {
   }
 
   getTerrainValue(x: number, y: number) {
-    return this.terrainData[y * this.width + x];
+    return this.terrainData[y * (this.width * 4) + x * 4];
   }
 
   /**

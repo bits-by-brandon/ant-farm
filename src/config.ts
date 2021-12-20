@@ -1,5 +1,7 @@
+import Color from "./lib/color";
+
 export const imageColorMap = {
-  Wall: 0xff0000ff, // red
-  Food: 0xff00ff00, // green
-  Empty: 0xffffffff, // white
+  Wall: new Color(255, 0, 0, 255), // red
+  Food: new Color(0, 255, 0, 255), // green
+  Empty: new Color(255, 255, 255, 255), // white
 } as const;

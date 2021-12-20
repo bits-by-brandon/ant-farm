@@ -111,7 +111,7 @@ export default class Simulation {
 
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
-        const foodValue = foodData[y * this.width + x];
+        const foodValue = foodData[y * (this.width * 4) + x * 4];
         if (foodValue > 1) foodFactory.create({ x, y });
       }
     }
@@ -168,7 +168,6 @@ export default class Simulation {
     mapBuffer: ArrayBuffer,
     props: SimulationCreateProps
   ): Promise<Simulation> {
-
     // TODO: Something went weird after converting the Uint32Array to Uint8Array
     const mapData = new Uint8Array(mapBuffer);
     const [terrainData, foodData] = MapHelper.mapWorldDataToLayers(mapData, [
