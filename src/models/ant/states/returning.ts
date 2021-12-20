@@ -8,9 +8,7 @@ export class Returning implements State {
     this.parent = parent;
   }
 
-  enter() {
-    console.log("returning home");
-  }
+  enter() {}
   exit() {}
 
   update(_delta: number, _step: number) {

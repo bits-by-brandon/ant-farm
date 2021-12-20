@@ -131,12 +131,16 @@ export default class Simulation {
     // Draw the terrain
     this.ctx.drawImage(this.terrainBitmap, 0, 0, this.width, this.height);
 
+    // Draw the quadtree for the ants
+    // const antLayer = this.world.entityLayers.get("Ant");
+    // if (antLayer) antLayer.qtree.draw(this.ctx);
+
     for (const entity of this.world.entities) {
       entity.draw(this.ctx);
     }
   }
 
-  step(timestamp: number) {
+  step(timestamp: DOMHighResTimeStamp) {
     const delta = timestamp - this.lastStamp;
 
     this._update(delta, this.stepCount);

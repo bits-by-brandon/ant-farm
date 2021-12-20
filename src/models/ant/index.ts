@@ -6,29 +6,8 @@ import { State, StateMachine } from "../state";
 import { Foraging } from "./states/foraging";
 import getRandomNumber from "../../util/get-random-number";
 import { clamp } from "../../util/clamp";
-// import {
-//   EAST,
-//   NORTH,
-//   NORTH_EAST,
-//   NORTH_WEST,
-//   SOUTH,
-//   SOUTH_EAST,
-//   SOUTH_WEST,
-//   WEST,
-// } from "../../util/unit-circle";
 import { Returning } from "./states/returning";
-
-export type Theta = number;
-// export type SearchSpace = [
-//   [Theta, ENTITY_TYPE],
-//   [Theta, ENTITY_TYPE],
-//   [Theta, ENTITY_TYPE],
-//   [Theta, ENTITY_TYPE],
-//   [Theta, ENTITY_TYPE],
-//   [Theta, ENTITY_TYPE],
-//   [Theta, ENTITY_TYPE],
-//   [Theta, ENTITY_TYPE]
-// ];
+import Pheromone, { PheromoneType } from "../pheromone";
 
 interface AntFactoryCreateArgs {
   x: number;
@@ -55,6 +34,8 @@ export default class Ant extends Entity implements StateMachine {
   turnChance: number;
   turnRange: number;
   foodDetectionRange: number;
+  pheromoneCountdown: number;
+  pheromoneTimePeriod: number;
 
   constructor(
     x: number,
@@ -81,6 +62,9 @@ export default class Ant extends Entity implements StateMachine {
     this.turnChance = 0.01; // normalized percentage, once per step
     this.turnRange = 1;
     this.foodDetectionRange = 2;
+
+    this.pheromoneTimePeriod = 300; // in milliseconds
+    this.pheromoneCountdown = this.pheromoneTimePeriod;
 
     this.states = {
       foraging: new Foraging(this),
@@ -125,6 +109,16 @@ export default class Ant extends Entity implements StateMachine {
     }
   }
 
+  updatePheromone(delta: number, callback: () => void) {
+    this.pheromoneCountdown -= delta;
+    if (this.pheromoneCountdown <= 0) {
+      callback();
+
+      // reset the countdown
+      this.pheromoneCountdown = this.pheromoneTimePeriod;
+    }
+  }
+
   /**
    * Clamps ants to the edge of the map and reflects their direction
    */
@@ -157,31 +151,15 @@ export default class Ant extends Entity implements StateMachine {
     }
   }
 
-  /**
-   * Return an array of [theta, entityType] tuples of all surrounding world tiles starting from the north west block.
-   */
-  // search(): SearchSpace {
-  //   // create array of search tiles relative to current position
-  //   return [
-  //     [NORTH_WEST, -1, -1],
-  //     [NORTH, 0, -1],
-  //     [NORTH_EAST, 1, -1],
-  //     [WEST, -1, 0],
-  //     [EAST, 1, 0],
-  //     [SOUTH_WEST, -1, 1],
-  //     [SOUTH, 0, 1],
-  //     [SOUTH_EAST, 1, 1],
-  //   ].map(([theta, xOffset, yOffset]) => {
-  //     return [
-  //       this.world.getTileProp(
-  //         this.gridPosition.x + xOffset,
-  //         this.gridPosition.y + yOffset,
-  //         "entityType"
-  //       ),
-  //       theta,
-  //     ];
-  //   }) as SearchSpace;
-  // }
+  dropPheromone(type: PheromoneType) {
+    const pheromone = new Pheromone(
+      type,
+      this.pos.copy(),
+      this.world,
+      this.noise
+    );
+    this.world.insert(pheromone, "Pheromone");
+  }
 }
 
 export class AntFactory {
@@ -198,7 +176,7 @@ export class AntFactory {
   create(args: AntFactoryCreateArgs) {
     const { x, y, nest } = args;
     const ant = new Ant(x, y, this.index, nest, this.world, this.noise);
-    this.world.insert(ant, "Ant");
+    this.world.insert(ant, "Ant", true);
     this.index++;
     return ant;
   }

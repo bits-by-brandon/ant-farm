@@ -2,6 +2,7 @@ import { State } from "../../state";
 import Ant from "../index";
 import map from "../../../util/map";
 import Food from "../../food";
+import { PheromoneType } from "../../pheromone";
 
 export class Foraging implements State {
   private parent: Ant;
@@ -11,7 +12,7 @@ export class Foraging implements State {
   }
 
   enter() {
-    console.log("foraging");
+
   }
   exit() {
     // No op
@@ -23,6 +24,9 @@ export class Foraging implements State {
     this.parent.terrainCollide();
     this.parent.mapEdgeCollide();
     this.parent.updateGridPosition();
+    this.parent.updatePheromone(delta, () => {
+      this.parent.dropPheromone(PheromoneType.Home);
+    });
 
     // Check if food shares tile with ant, if so:
     const food = this.checkForFood();

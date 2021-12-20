@@ -2,7 +2,11 @@ import Entity from "./entity";
 import Quadtree, { Rectangle } from "./quadtree";
 
 type Tile = number;
-type EntityLayer = { entities: Set<Entity>; qtree: Quadtree };
+type EntityLayer = {
+  entities: Set<Entity>;
+  qtree: Quadtree;
+  isDynamic: boolean;
+};
 type MapDataLayer = Uint8Array;
 
 const quadtreeCapacity = 4;
@@ -49,8 +53,10 @@ export default class World {
    *
    * @param entity - Entity to be inserted into a layer
    * @param layerId - [optional] ID of layer to insert
+   * @param isDynamic - [optional] If true, will update the quadtree every frame. If the entities in this layer
+   *                   do not move, keep isDynamic false for performance gains.
    */
-  insert(entity: Entity, layerId = DEFAULT_LAYER_ID) {
+  insert(entity: Entity, layerId = DEFAULT_LAYER_ID, isDynamic = false) {
     let layer = this.entityLayers.get(layerId);
     if (!layer) {
       // If no existing layer is found, initialize a new layer
@@ -65,7 +71,7 @@ export default class World {
         quadtreeCapacity
       );
 
-      layer = { entities, qtree };
+      layer = { entities, qtree, isDynamic: isDynamic };
       this.entityLayers.set(layerId, layer);
     }
 
@@ -92,6 +98,9 @@ export default class World {
 
   update() {
     for (const layer of this.entityLayers.values()) {
+      // Static layers do not need to be cleared every frame
+      if (!layer.isDynamic) continue;
+
       layer.qtree.clear();
       for (const entity of layer.entities) {
         layer.qtree.insert(entity);
