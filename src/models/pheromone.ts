@@ -24,9 +24,7 @@ export default class Pheromone extends Entity {
   update(delta: number) {
     this.strength -= Pheromone.decayRate * delta;
 
-    if (this.strength <= 0) {
-      this.world.remove(this);
-    }
+    if (this.strength <= 0) this.world.remove(this, "Pheromone");
   }
 
   draw(ctx: CanvasRenderingContext2D) {

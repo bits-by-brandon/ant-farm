@@ -1,4 +1,4 @@
-import { Rectangle } from "../../src/models/quadtree";
+import { Rectangle } from "../../src/lib/quadtree";
 import Vector from "../../src/models/vector";
 
 describe("Rectangle", () => {

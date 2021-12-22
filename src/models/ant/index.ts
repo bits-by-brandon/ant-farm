@@ -63,7 +63,7 @@ export default class Ant extends Entity implements StateMachine {
     this.turnRange = 1;
     this.foodDetectionRange = 2;
 
-    this.pheromoneTimePeriod = 300; // in milliseconds
+    this.pheromoneTimePeriod = 400; // in milliseconds
     this.pheromoneCountdown = this.pheromoneTimePeriod;
 
     this.states = {

@@ -18,8 +18,13 @@ export default class Food extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = "#0ff";
+    ctx.fillStyle = "#61da00";
+    // ctx.strokeStyle = "#183a01";
     ctx.fillRect(this.pos.x, this.pos.y, 1, 1);
+    // ctx.beginPath();
+    // ctx.arc(this.pos.x, this.pos.y, 2, 0, Math.PI * 2);
+    // ctx.fill();
+    // ctx.stroke();
   }
 }
 

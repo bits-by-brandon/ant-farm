@@ -1,5 +1,5 @@
 import Entity from "./entity";
-import Quadtree, { Rectangle } from "./quadtree";
+import Quadtree, { Rectangle } from "../lib/quadtree";
 
 type Tile = number;
 type EntityLayer = {
@@ -71,7 +71,7 @@ export default class World {
         quadtreeCapacity
       );
 
-      layer = { entities, qtree, isDynamic: isDynamic };
+      layer = { entities, qtree, isDynamic };
       this.entityLayers.set(layerId, layer);
     }
 
