@@ -32,7 +32,7 @@ export default class Pheromone extends Entity {
 
     switch (this.type) {
       case PheromoneType.Food:
-        ctx.fillStyle = `rgba(0, 255, 0, ${alphaValue})`;
+        ctx.fillStyle = `rgba(255, 0, 0, ${alphaValue})`;
         break;
       case PheromoneType.Home:
       default:

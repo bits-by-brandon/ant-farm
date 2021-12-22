@@ -3,6 +3,7 @@ import Ant from "../index";
 import map from "../../../util/map";
 import Food from "../../food";
 import { PheromoneType } from "../../pheromone";
+import { Rectangle } from "../../../lib/quadtree";
 
 export class Foraging implements State {
   private parent: Ant;
@@ -11,9 +12,7 @@ export class Foraging implements State {
     this.parent = parent;
   }
 
-  enter() {
-
-  }
+  enter() {}
   exit() {
     // No op
   }
@@ -24,6 +23,7 @@ export class Foraging implements State {
     this.parent.terrainCollide();
     this.parent.mapEdgeCollide();
     this.parent.updateGridPosition();
+    this.parent.updateSensorRects();
     this.parent.updatePheromone(delta, () => {
       this.parent.dropPheromone(PheromoneType.Home);
     });
@@ -32,7 +32,7 @@ export class Foraging implements State {
     const food = this.checkForFood();
     if (food) {
       // turn around
-      this.parent.steerAngle += Math.PI;
+      this.parent.rotation += Math.PI;
       food.take();
       this.parent.held = true;
       // start returning with the food
@@ -41,9 +41,13 @@ export class Foraging implements State {
   }
 
   checkForFood(): Food | null {
-    const food = this.parent.world.nearby(
-      this.parent,
-      this.parent.foodDetectionRange,
+    const food = this.parent.world.query(
+      new Rectangle(
+        this.parent.pos.x,
+        this.parent.pos.y,
+        this.parent.foodDetectionRange,
+        this.parent.foodDetectionRange
+      ),
       "Food"
     ) as Food[];
 
@@ -55,7 +59,7 @@ export class Foraging implements State {
     const steerStep = delta * step * this.parent.wiggleVariance;
 
     if (Math.random() <= this.parent.turnChance) {
-      this.parent.steerAngle += map(
+      this.parent.rotation += map(
         Math.random(),
         0,
         1,
@@ -65,7 +69,7 @@ export class Foraging implements State {
     }
 
     // TODO: Update random walk to levy flight walk
-    this.parent.steerAngle += map(
+    this.parent.rotation += map(
       this.parent.noise(
         steerStep + 100 * this.parent.id,
         steerStep + 200 * this.parent.id

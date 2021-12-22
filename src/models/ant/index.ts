@@ -8,6 +8,7 @@ import getRandomNumber from "../../util/get-random-number";
 import { clamp } from "../../util/clamp";
 import { Returning } from "./states/returning";
 import Pheromone, { PheromoneType } from "../pheromone";
+import { Rectangle } from "../../lib/quadtree";
 
 interface AntFactoryCreateArgs {
   x: number;
@@ -28,14 +29,19 @@ export default class Ant extends Entity implements StateMachine {
   lastGridPosition: VectorPair;
   gridPosition: VectorPair;
   speed: number;
-  steerAngle: number;
+  rotation: number;
   wiggleRange: number;
   wiggleVariance: number;
   turnChance: number;
   turnRange: number;
   foodDetectionRange: number;
+  pheromoneSensorRadius: number;
   pheromoneCountdown: number;
   pheromoneTimePeriod: number;
+  pheromoneSensorAngle: number;
+  pheromoneSensorDistance: number;
+  pheromoneSteerAngle: number;
+  sensorRects: [Rectangle, Rectangle, Rectangle];
 
   constructor(
     x: number,
@@ -56,7 +62,7 @@ export default class Ant extends Entity implements StateMachine {
     // Set this to true if the position grid has changed and we need to update the world position
     this.posDirtyBit = false;
 
-    this.steerAngle = getRandomNumber(0, 2 * Math.PI); // in radians
+    this.rotation = getRandomNumber(0, 2 * Math.PI); // in radians
     this.wiggleRange = 0.003;
     this.wiggleVariance = 0.0001;
     this.turnChance = 0.01; // normalized percentage, once per step
@@ -65,6 +71,15 @@ export default class Ant extends Entity implements StateMachine {
 
     this.pheromoneTimePeriod = 400; // in milliseconds
     this.pheromoneCountdown = this.pheromoneTimePeriod;
+    this.pheromoneSensorRadius = 5;
+    this.pheromoneSensorDistance = 7;
+    this.pheromoneSensorAngle = 1.0472; // in radians
+    this.pheromoneSteerAngle = 1.0472;
+    this.sensorRects = [
+      new Rectangle(0, 0, 0, 0),
+      new Rectangle(0, 0, 0, 0),
+      new Rectangle(0, 0, 0, 0),
+    ];
 
     this.states = {
       foraging: new Foraging(this),
@@ -84,12 +99,18 @@ export default class Ant extends Entity implements StateMachine {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = this.held ? "#f00" : "#000";
+    // ctx.fillStyle = this.held ? "#f00" : "#000";
+    ctx.fillStyle = "#151515";
     ctx.fillRect(this.pos.x, this.pos.y, 1, 1);
+
+    ctx.fillStyle = "rgba(209, 24, 250, 0.43)";
+    for (const rect of this.sensorRects) {
+      ctx.fillRect(rect.x / 2, rect.y / 2, rect.width, rect.height);
+    }
   }
 
   updatePosition() {
-    const vel = Vector.fromPolar(this.steerAngle).mult(this.speed);
+    const vel = Vector.fromPolar(this.rotation).mult(this.speed);
     this.lastPos.x = this.pos.x;
     this.lastPos.y = this.pos.y;
     this.pos.x += vel.x;
@@ -129,7 +150,7 @@ export default class Ant extends Entity implements StateMachine {
       this.pos.x < 0 ||
       this.pos.y < 0
     ) {
-      this.steerAngle *= Math.PI;
+      this.rotation *= Math.PI;
     }
     this.pos.x = clamp(this.pos.x, 0, this.world.width);
     this.pos.y = clamp(this.pos.y, 0, this.world.height);
@@ -147,7 +168,7 @@ export default class Ant extends Entity implements StateMachine {
     if (terrainValue > 0) {
       this.pos.x = this.lastPos.x;
       this.pos.y = this.lastPos.y;
-      this.steerAngle *= Math.PI;
+      this.rotation *= Math.PI;
     }
   }
 
@@ -159,6 +180,46 @@ export default class Ant extends Entity implements StateMachine {
       this.noise
     );
     this.world.insert(pheromone, "Pheromone");
+  }
+
+  updateSensorRects() {
+    const thetas = [
+      // Left sensor
+      this.pheromoneSensorAngle,
+      // Forward sensor
+      0,
+      // Right sensor
+      Math.PI * 2 - this.pheromoneSensorAngle,
+    ] as const;
+
+    this.sensorRects = thetas.map((theta) => {
+      const sensorPosition = Vector.fromPolar(theta + this.rotation)
+        .mult(this.pheromoneSensorDistance)
+        .add(this.pos.copy().mult(2));
+
+      return new Rectangle(
+        sensorPosition.x,
+        sensorPosition.y,
+        this.pheromoneSensorRadius / 2,
+        this.pheromoneSensorRadius / 2
+      );
+    }) as [Rectangle, Rectangle, Rectangle];
+  }
+
+  detectPheromone(): [number, number, number] {
+    return this.sensorRects.map((sensorRect) => {
+      const pheromones = this.world.query(
+        new Rectangle(
+          sensorRect.x,
+          sensorRect.y,
+          this.pheromoneSensorRadius / 2,
+          this.pheromoneSensorRadius / 2
+        ),
+        "Pheromone"
+      );
+
+      return pheromones.length;
+    }) as [number, number, number];
   }
 }
 

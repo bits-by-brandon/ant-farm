@@ -127,13 +127,6 @@ export default class World {
     return layer?.qtree.query(range) || [];
   }
 
-  nearby(entity: Entity, radius: number, layerId = DEFAULT_LAYER_ID): Entity[] {
-    return this.query(
-      new Rectangle(entity.pos.x, entity.pos.y, radius, radius),
-      layerId
-    );
-  }
-
   getTerrainValue(x: number, y: number) {
     return this.terrainData[y * (this.width * 4) + x * 4];
   }
