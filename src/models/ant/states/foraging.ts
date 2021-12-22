@@ -33,8 +33,8 @@ export class Foraging implements State {
     if (food) {
       // turn around
       this.parent.steerAngle += Math.PI;
-      this.parent.held = food;
-      this.parent.world.remove(food);
+      food.take();
+      this.parent.held = true;
       // start returning with the food
       this.parent.setState(this.parent.states.returning);
     }
@@ -45,7 +45,7 @@ export class Foraging implements State {
       this.parent,
       this.parent.foodDetectionRange,
       "Food"
-    );
+    ) as Food[];
 
     return food[0] || null;
   }

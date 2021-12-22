@@ -23,7 +23,7 @@ async function handleOnload(imageSrc: any) {
   );
 
   const simulation = await Simulation.create(buffer, {
-    antCount: 400,
+    antCount: 200,
     width,
     height,
   });

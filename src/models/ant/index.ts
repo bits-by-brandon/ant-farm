@@ -20,7 +20,7 @@ export default class Ant extends Entity implements StateMachine {
 
   readonly id: number;
   readonly nest: Nest;
-  held: Entity | null;
+  held: boolean;
   state: State;
   states: { [key: string]: State };
   posDirtyBit: boolean;
@@ -49,7 +49,7 @@ export default class Ant extends Entity implements StateMachine {
     this.id = id;
     this.speed = 0.5;
     this.nest = nest;
-    this.held = null;
+    this.held = false;
     this.lastPos = new Vector(x, y);
     this.gridPosition = { x, y } as VectorPair;
     this.lastGridPosition = { x, y } as VectorPair;

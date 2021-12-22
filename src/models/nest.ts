@@ -15,6 +15,11 @@ export default class Nest extends Entity {
 
   public readonly id: number;
 
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = "#333";
+    ctx.fillRect(this.pos.x - 5, this.pos.y - 5, 10, 10);
+  }
+
   constructor(args: NestConstructor) {
     const { x, y, id, world, noise } = args;
     super(new Vector(x, y), world, noise);

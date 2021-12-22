@@ -84,13 +84,16 @@ export default class Simulation {
   }
 
   createNest(): Nest {
-    return new Nest({
+    const nest = new Nest({
       x: this.world.width / 2,
       y: this.world.height / 2,
       id: 0,
       noise: this.noise,
       world: this.world,
     });
+
+    this.world.insert(nest, "Nest");
+    return nest;
   }
 
   /**
@@ -109,10 +112,19 @@ export default class Simulation {
   initializeFood(foodData: Uint8Array) {
     const foodFactory = new FoodFactory(this.world, this.noise);
 
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        const foodValue = foodData[y * (this.width * 4) + x * 4];
-        if (foodValue > 1) foodFactory.create({ x, y });
+    for (let x = 0; x < this.width; x += 2) {
+      for (let y = 0; y < this.height; y += 2) {
+        let quantity = 0;
+        const allPixels = [
+          [x, y],
+          [x + 1, y],
+          [x, y + 1],
+          [x + 1, y + 1],
+        ];
+        for (const [x, y] of allPixels) {
+          quantity += foodData[y * (this.width * 4) + x * 4] > 0 ? 1 : 0;
+        }
+        if (quantity > 1) foodFactory.create({ x, y }, quantity);
       }
     }
   }
@@ -132,8 +144,8 @@ export default class Simulation {
     this.ctx.drawImage(this.terrainBitmap, 0, 0, this.width, this.height);
 
     // Draw the quadtree for the ants
-    const antLayer = this.world.entityLayers.get("Pheromone");
-    if (antLayer) antLayer.qtree.draw(this.ctx);
+    // const antLayer = this.world.entityLayers.get("Ant");
+    // if (antLayer) antLayer.qtree.draw(this.ctx);
 
     for (const entity of this.world.entities) {
       entity.draw(this.ctx);
