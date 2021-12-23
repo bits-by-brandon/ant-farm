@@ -50,6 +50,7 @@ export default class Simulation {
 
   setVisibilityLayer(layerName: visibilityLayerName, value: boolean) {
     this.world.visibilityLayers.set(layerName, value);
+    if (this.state === "paused") this.draw();
   }
 
   getCanvasContext(): CanvasRenderingContext2D {
@@ -145,7 +146,7 @@ export default class Simulation {
     }
   }
 
-  _draw() {
+  draw() {
     this.ctx.clearRect(0, 0, this.width, this.height);
 
     // Draw the terrain
@@ -168,7 +169,7 @@ export default class Simulation {
 
   step() {
     this._update(this.stepCount);
-    this._draw();
+    this.draw();
 
     this.stepCount++;
     this.raf = requestAnimationFrame(this.step.bind(this));

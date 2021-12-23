@@ -13,6 +13,7 @@ export default class UiController {
     const input = document.getElementById(id);
     if (!input) throw new Error(`No file input found with id ${id}`);
     input.setAttribute("disabled", "true");
+    input.parentElement!.classList.add("disabled");
   }
 
   bindPropertySlider<T extends Entity = Entity>(
@@ -44,6 +45,7 @@ export default class UiController {
         // @ts-ignore
         entity[property] = parseInt(e.target.value);
       }
+      this.simulation.draw();
     });
   }
 
@@ -63,17 +65,20 @@ export default class UiController {
   }
 
   bindPlayPause(id: string) {
-    const playPauseButton = document.getElementById(id);
-    if (!playPauseButton || !(playPauseButton instanceof HTMLButtonElement)) {
+    const btn = document.getElementById(id);
+    if (!btn || !(btn instanceof HTMLButtonElement)) {
       throw new Error(
         `Play/Pause button with id ${id}, does not exist, or is not a <button>`
       );
     }
 
-    playPauseButton.addEventListener("click", () => {
+    btn.removeAttribute("disabled");
+    btn.addEventListener("click", () => {
       if (this.simulation.state === "playing") {
+        btn.classList.add("playing");
         this.simulation.stop();
       } else {
+        btn.classList.remove("playing");
         this.simulation.start();
       }
     });

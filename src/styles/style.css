@@ -10,10 +10,24 @@ body {
   background: rgb(50, 50, 50);
 }
 
+.sr-only {
+  opacity: 0;
+  display: inline-block;
+  height: 0;
+  width: 0;
+}
+
 .controls {
   --vertical-padding: 8px;
   --neutral-1: #efefef;
   --neutral-2: #dcdcdc;
+  --neutral-3: #b2b2b2;
+  --neutral-8: #2f2f2f;
+
+  --primary-light: #d9dfff;
+  --primary: #002cff;
+
+  --stroke: 2px;
 
   border-radius: 16px;
   position: fixed;
@@ -41,15 +55,112 @@ body {
 
 .control__group input[type="checkbox"],
 .control__group input[type="range"] {
+  position: relative;
   margin-right: 8px;
+  z-index: 1;
+  outline: none;
+}
+
+.control__group input[type="checkbox"]:before,
+.control__group input[type="range"]:before {
+  content: "";
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+  border-radius: 4px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  outline: var(--stroke) solid var(--primary);
+  opacity: 0;
+  z-index: -1;
+}
+
+.control__group input[type="checkbox"]:focus:before,
+.control__group input[type="range"]:focus:before {
+  opacity: 1;
 }
 
 .control__group-file {
   padding: 12px;
-  background: #e0e0e0;
+  background: var(--primary-light);
   border-radius: 10px;
   margin-bottom: 8px;
-  border: none;
+  border: var(--stroke) solid var(--primary);
+}
+
+.control__group-file.disabled {
+  --primary-light: var(--neutral-2);
+  --primary: var(--neutral-2);
+}
+
+.control__group-playback {
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 16px 8px;
+}
+
+.playback-button {
+  --size: 42px;
+  --pause-distance: 3px;
+
+  position: relative;
+  appearance: none;
+  border: var(--stroke) solid var(--primary);
+  color: white;
+  margin-right: 12px;
+  width: calc(var(--size) * 1.5);
+  height: var(--size);
+  border-radius: 8px;
+  transition: transform 30ms ease-in-out;
+}
+
+.playback-button:disabled {
+  --primary: var(--neutral-3);
+  --primary-light: var(--neutral-2);
+  border: var(--stroke) solid var(--neutral-2);
+  background: var(--neutral-2);
+}
+
+.playback-button:focus:not(:disabled),
+.playback-button:hover:not(:disabled) {
+  outline: none;
+  background: var(--primary-light);
+}
+
+.playback-button:active {
+  transform: translateY(2px);
+}
+
+#play-pause:before,
+#play-pause:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: var(--primary);
+  width: var(--stroke);
+  height: 14px;
+  transform-origin: center top;
+  border-radius: 2px;
+  transition: transform 80ms ease-in-out;
+}
+
+#play-pause:before {
+  transform: translate(calc(-50% - var(--pause-distance)), -50%);
+}
+
+#play-pause:after {
+  transform: translate(calc(-50% + var(--pause-distance)), -50%);
+}
+
+#play-pause.playing:before {
+  transform: rotate(-60deg) translate(3.5px, -50%);
+}
+
+#play-pause.playing:after {
+  transform: rotate(60deg) translate(3.5px, -50%);
 }
 
 #main-canvas {
