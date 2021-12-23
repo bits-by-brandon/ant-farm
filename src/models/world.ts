@@ -1,14 +1,19 @@
 import Entity from "./entity";
-import Quadtree, { Rectangle } from "../lib/quadtree";
+import Quadtree from "../lib/quadtree";
+import {Rectangle} from "../lib/rectangle";
 
-type Tile = number;
 type EntityLayer = {
   entities: Set<Entity>;
   qtree: Quadtree;
   isDynamic: boolean;
 };
 type MapDataLayer = Uint8Array;
-
+export type visibilityLayerName =
+  | "sensor"
+  | "antQTree"
+  | "pheromoneQTree"
+  | "foodPheromone"
+  | "homePheromone";
 const quadtreeCapacity = 4;
 const DEFAULT_LAYER_ID = "DEFAULT";
 
@@ -24,6 +29,7 @@ export default class World {
   readonly height: number;
   readonly entities: Entity[];
   readonly terrainData: MapDataLayer;
+  readonly visibilityLayers: Map<visibilityLayerName, boolean>;
   public entityLayers: Map<string, EntityLayer>;
 
   constructor({ width, height, entities, terrainData }: ConstructorParams) {
@@ -31,6 +37,13 @@ export default class World {
     this.height = height;
     this.entities = entities || [];
     this.entityLayers = new Map<string, EntityLayer>();
+    this.visibilityLayers = new Map([
+      ["sensor", false],
+      ["antQTree", false],
+      ["pheromoneQTree", false],
+      ["foodPheromone", true],
+      ["homePheromone", true],
+    ]);
 
     this.validateMapLayer(terrainData);
     this.terrainData = terrainData;
@@ -114,62 +127,20 @@ export default class World {
    * @param range
    * @param layerId
    */
-  query(range: Rectangle, layerId = DEFAULT_LAYER_ID) {
+  query<T extends Entity = Entity>(range: Rectangle, layerId = DEFAULT_LAYER_ID): T[] {
     if (layerId === "ALL") {
-      const found: Entity[] = [];
+      const found: T[] = [];
       for (const layer of this.entityLayers.values()) {
-        found.push(...layer.qtree.query(range));
+        found.push(...layer.qtree.query(range) as T[]);
       }
       return found;
     }
 
     const layer = this.entityLayers.get(layerId);
-    return layer?.qtree.query(range) || [];
+    return layer?.qtree.query(range) as T[] || [];
   }
 
   getTerrainValue(x: number, y: number) {
     return this.terrainData[y * (this.width * 4) + x * 4];
   }
-
-  /**
-   * Uses the bitScheme to parse out the given property from the 32 bit data chunk
-   */
-  static getBitValue(tile: Tile, property: keyof typeof World.bitScheme) {
-    const { offset, mask } = World.bitScheme[property];
-    // (Left side of >>>) bitwise & to mask out all irrelevant bits
-    // (>>> and operand) shift bits by the offset to isolate value
-    return (tile & mask) >>> offset;
-  }
-
-  /**
-   * Uses the bitScheme to set given property to the 32 bit data chunk
-   */
-  static setBitValue(
-    tile: Tile,
-    property: keyof typeof World.bitScheme,
-    value: number
-  ) {
-    const { mask, offset } = World.bitScheme[property];
-    // (Right side of OR) empty the mask subsection of the tile
-    // (Left side of OR) shift the new value into the right spot
-    // apply the shifted value to the tile
-    return (value << offset) | (tile & ~mask);
-  }
-
-  // prettier-ignore
-  static bitScheme = {
-    entityType: { length: 4,  offset: 0,  mask: 0b00000000000000000000000000001111 },
-    entityId:   { length: 12, offset: 4,  mask: 0b00000000000000001111111111110000 },
-    terrain:    { length: 2,  offset: 16, mask: 0b00000000000000110000000000000000 },
-    homeTrail:  { length: 3,  offset: 18, mask: 0b00000000000111000000000000000000 },
-    foodTrail:  { length: 3,  offset: 21, mask: 0b00000000111000000000000000000000 },
-  } as const;
-}
-
-export enum TILE_PROPS {
-  "ENTITY_TYPE" = 0,
-  "ENTITY_ID" = 1,
-  "TERRAIN" = 2,
-  "HOME_TRAIL" = 3,
-  "FOOD_TRAIL" = 4,
 }

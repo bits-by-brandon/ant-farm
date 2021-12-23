@@ -1,5 +1,5 @@
 import Entity from "../models/entity";
-import { Rectangle } from "./quadtree";
+import {Rectangle} from "./rectangle";
 
 export interface EntityStorage {
   insert(point: Entity): boolean;

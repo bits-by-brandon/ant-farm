@@ -1,5 +1,5 @@
 interface Updatable {
-  update(delta: number, step: number): void;
+  update(step: number): void;
 }
 
 type VectorPair = {

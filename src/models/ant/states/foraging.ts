@@ -3,7 +3,7 @@ import Ant from "../index";
 import map from "../../../util/map";
 import Food from "../../food";
 import { PheromoneType } from "../../pheromone";
-import { Rectangle } from "../../../lib/quadtree";
+import { Rectangle } from "../../../lib/rectangle";
 
 export class Foraging implements State {
   private parent: Ant;
@@ -17,14 +17,16 @@ export class Foraging implements State {
     // No op
   }
 
-  update(delta: number, step: number) {
-    this.turnRandomDirection(delta, step);
+  update(step: number) {
+    this.turnRandomDirection(step);
     this.parent.updatePosition();
     this.parent.terrainCollide();
     this.parent.mapEdgeCollide();
     this.parent.updateGridPosition();
     this.parent.updateSensorRects();
-    this.parent.updatePheromone(delta, () => {
+    this.parent.followPheromone(PheromoneType.Food);
+
+    this.parent.updatePheromone(() => {
       this.parent.dropPheromone(PheromoneType.Home);
     });
 
@@ -32,7 +34,7 @@ export class Foraging implements State {
     const food = this.checkForFood();
     if (food) {
       // turn around
-      this.parent.rotation += Math.PI;
+      this.parent.desiredRotation += Math.PI;
       food.take();
       this.parent.held = true;
       // start returning with the food
@@ -54,12 +56,12 @@ export class Foraging implements State {
     return food[0] || null;
   }
 
-  turnRandomDirection(delta: number, step: number) {
-    // scalar function applied to delta to reduce scale of noise steps;
-    const steerStep = delta * step * this.parent.wiggleVariance;
+  turnRandomDirection(step: number) {
+    // scalar function applied to the current step to reduce scale of noise steps;
+    const steerStep = step * this.parent.wiggleVariance;
 
     if (Math.random() <= this.parent.turnChance) {
-      this.parent.rotation += map(
+      this.parent.desiredRotation += map(
         Math.random(),
         0,
         1,
@@ -69,7 +71,7 @@ export class Foraging implements State {
     }
 
     // TODO: Update random walk to levy flight walk
-    this.parent.rotation += map(
+    this.parent.desiredRotation += map(
       this.parent.noise(
         steerStep + 100 * this.parent.id,
         steerStep + 200 * this.parent.id

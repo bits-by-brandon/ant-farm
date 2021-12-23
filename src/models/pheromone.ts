@@ -13,7 +13,7 @@ export default class Pheromone extends Entity {
   type: PheromoneType;
 
   static maxStrength = 100;
-  static decayRate = 0.01;
+  static decayRate = 0.2;
 
   constructor(type: PheromoneType, pos: Vector, world: World, noise: Noise) {
     super(pos, world, noise);
@@ -21,8 +21,8 @@ export default class Pheromone extends Entity {
     this.type = type;
   }
 
-  update(delta: number) {
-    this.strength -= Pheromone.decayRate * delta;
+  update() {
+    this.strength -= Pheromone.decayRate;
 
     if (this.strength <= 0) this.world.remove(this, "Pheromone");
   }
@@ -32,10 +32,12 @@ export default class Pheromone extends Entity {
 
     switch (this.type) {
       case PheromoneType.Food:
+        if (!this.world.visibilityLayers.get("foodPheromone")) return;
         ctx.fillStyle = `rgba(255, 0, 0, ${alphaValue})`;
         break;
       case PheromoneType.Home:
       default:
+        if (!this.world.visibilityLayers.get("homePheromone")) return;
         ctx.fillStyle = `rgba(0, 0, 255, ${alphaValue})`;
     }
 

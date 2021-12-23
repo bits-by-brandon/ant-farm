@@ -7,5 +7,5 @@ export interface StateMachine {
 export interface State {
   enter: () => void;
   exit: () => void;
-  update: (delta: number, step: number) => void;
+  update: (step: number) => void;
 }

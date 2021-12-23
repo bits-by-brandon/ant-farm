@@ -14,13 +14,6 @@ export default abstract class Entity implements Updatable {
 
   static type = "GenericEntity";
 
-  update(_delta: number, _step: number) {}
+  update(_step: number) {}
   draw(_ctx: CanvasRenderingContext2D) {}
-}
-
-export enum ENTITY_TYPE {
-  EMPTY = 0,
-  ANT = 1,
-  FOOD = 2,
-  NEST = 3,
 }

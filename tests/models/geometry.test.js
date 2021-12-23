@@ -1,5 +1,5 @@
-import { Rectangle } from "../../src/lib/quadtree";
 import Vector from "../../src/models/vector";
+import {Rectangle} from "../../src/lib/rectangle";
 
 describe("Rectangle", () => {
   it("returns true if a point is contained within it's bounds", () => {

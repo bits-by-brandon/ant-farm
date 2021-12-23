@@ -1,11 +1,13 @@
 import { makeNoise2D } from "fast-simplex-noise";
 
-import World from "./models/world";
+import World, { visibilityLayerName } from "./models/world";
 import Nest from "./models/nest";
 import { AntFactory } from "./models/ant";
 import { FoodFactory } from "./models/food";
 import MapHelper from "./lib/map-helper";
 import { imageColorMap } from "./config";
+
+type SimulationState = "playing" | "paused";
 
 interface SimulationCreateProps {
   antCount: number;
@@ -30,6 +32,7 @@ export default class Simulation {
   lastStamp: number;
   stepCount: number;
   raf: number;
+  state: SimulationState;
 
   constructor(props: SimulationProps) {
     this.antCount = props.antCount;
@@ -42,6 +45,11 @@ export default class Simulation {
     this.lastStamp = 0;
     this.stepCount = 0;
     this.raf = 0;
+    this.state = "paused";
+  }
+
+  setVisibilityLayer(layerName: visibilityLayerName, value: boolean) {
+    this.world.visibilityLayers.set(layerName, value);
   }
 
   getCanvasContext(): CanvasRenderingContext2D {
@@ -129,11 +137,11 @@ export default class Simulation {
     }
   }
 
-  _update(delta: number, step: number) {
+  _update(step: number) {
     this.world.update();
 
     for (const entity of this.world.entities) {
-      entity.update(delta, step);
+      entity.update(step);
     }
   }
 
@@ -143,22 +151,25 @@ export default class Simulation {
     // Draw the terrain
     this.ctx.drawImage(this.terrainBitmap, 0, 0, this.width, this.height);
 
-    // Draw the quadtree for the ants
-    // const antLayer = this.world.entityLayers.get("Ant");
-    // if (antLayer) antLayer.qtree.draw(this.ctx);
-
     for (const entity of this.world.entities) {
       entity.draw(this.ctx);
     }
+
+    if (this.world.visibilityLayers.get("antQTree")) {
+      const antLayer = this.world.entityLayers.get("Ant");
+      if (antLayer) antLayer.qtree.draw(this.ctx);
+    }
+
+    if (this.world.visibilityLayers.get("pheromoneQTree")) {
+      const pheromoneLayer = this.world.entityLayers.get("Pheromone");
+      if (pheromoneLayer) pheromoneLayer.qtree.draw(this.ctx);
+    }
   }
 
-  step(timestamp: DOMHighResTimeStamp) {
-    const delta = timestamp - this.lastStamp;
-
-    this._update(delta, this.stepCount);
+  step() {
+    this._update(this.stepCount);
     this._draw();
 
-    this.lastStamp = timestamp;
     this.stepCount++;
     this.raf = requestAnimationFrame(this.step.bind(this));
   }
@@ -167,6 +178,7 @@ export default class Simulation {
    * Starts the simulation. Attempts to runs a per animation frame
    */
   start() {
+    this.state = "playing";
     this.raf = requestAnimationFrame(this.step.bind(this));
   }
 
@@ -174,6 +186,7 @@ export default class Simulation {
    * Stops the simulation. Run start() to restart simulation
    */
   stop() {
+    this.state = "paused";
     cancelAnimationFrame(this.raf);
   }
 
