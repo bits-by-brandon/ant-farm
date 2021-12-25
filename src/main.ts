@@ -3,7 +3,6 @@ import "./styles/typography.css";
 
 import Simulation from "./simulation";
 import ImageHelper from "./lib/image-helper";
-import Ant from "./models/ant";
 import UiController from "./ui-controller";
 
 const uploadButton = document.getElementById(
@@ -39,12 +38,10 @@ async function handleOnload(imageSrc: any) {
   uiController.bindVisibilityLayerToggle("show-home-pheromone", "homePheromone");
   uiController.bindVisibilityLayerToggle( "show-pheromone-quadtree", "pheromoneQTree" );
 
-  uiController.bindPropertySlider<Ant>( "pheromone-steer-angle", "Ant", "pheromoneSteerAngle");
-  uiController.bindPropertySlider<Ant>( "pheromone-sensor-distance", "Ant", "pheromoneSensorDistance");
-  uiController.bindPropertySlider<Ant>( "pheromone-sensor-radius", "Ant", "pheromoneSensorRadius");
-  uiController.hideMapInput("map-upload-input")
-
-  uiController.bindPlayPause("play-pause")
+  uiController.bindAllPropertySliders();
+  uiController.hideMapInput();
+  uiController.bindPlayPause();
+  uiController.bindStep();
 
   simulation.start();
 }

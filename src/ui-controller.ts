@@ -1,50 +1,72 @@
 import Simulation from "./simulation";
-import Entity from "./models/entity";
 import { visibilityLayerName } from "./models/world";
 
 export default class UiController {
   readonly simulation: Simulation;
+  private _playPauseButton: HTMLButtonElement | null;
+  private _mapInput: HTMLInputElement | null;
+  private _stepButton: HTMLButtonElement | null;
+  private _propertySliders: NodeListOf<HTMLInputElement> | null;
 
   constructor(simulation: Simulation) {
     this.simulation = simulation;
+    this._mapInput = null;
+    this._playPauseButton = null;
+    this._propertySliders = null;
+    this._stepButton = null;
   }
 
-  hideMapInput(id: string) {
-    const input = document.getElementById(id);
-    if (!input) throw new Error(`No file input found with id ${id}`);
-    input.setAttribute("disabled", "true");
-    input.parentElement!.classList.add("disabled");
+  getElement<T extends HTMLElement>(id: string) {
+    const el = document.getElementById(id);
+    if (!el) throw new Error(`Could not find element with id ${id}`);
+    return el as T;
   }
 
-  bindPropertySlider<T extends Entity = Entity>(
-    id: string,
-    entityLayerId: string,
-    property: keyof T
-  ) {
-    const slider = document.getElementById(id) as HTMLInputElement;
-    const layer = this.simulation.world.entityLayers.get(entityLayerId);
-    if (!layer) {
-      throw new Error(
-        `Empty entity layer for given entityLayer id ${entityLayerId}`
-      );
+  get mapInput() {
+    if (this._mapInput) return this._mapInput;
+    this._mapInput = this.getElement<HTMLInputElement>("map-upload-input");
+    return this._mapInput;
+  }
+
+  hideMapInput() {
+    this.mapInput.setAttribute("disabled", "true");
+    this.mapInput.parentElement!.classList.add("disabled");
+  }
+
+  get propertySliders(): NodeListOf<HTMLInputElement> {
+    if (this._propertySliders) return this._propertySliders;
+    this._propertySliders = document.querySelectorAll<HTMLInputElement>(
+      "[data-simulation-property]"
+    );
+    return this._propertySliders as NodeListOf<HTMLInputElement>;
+  }
+
+  bindAllPropertySliders() {
+    this.propertySliders.forEach(this.bindPropertySlider.bind(this));
+  }
+
+  bindPropertySlider(slider: HTMLInputElement) {
+    const property = slider.dataset.simulationProperty;
+    const layerId = slider.dataset.worldLayer;
+    if (!property || !layerId) return;
+
+    const layer = this.simulation.world.entityLayers.get(layerId);
+    if (!layer) throw Error(`No layer with id ${layerId}`);
+
+    const [entity] = layer.entities;
+    if (!(property in entity)) {
+      throw Error(`Entity ${entity.toString()} does not have property ${property}`)
     }
 
-    const [entity] = layer.entities as Set<T>;
-    // @ts-ignore
+    // @ts-ignore;
     slider.value = entity[property];
     slider.removeAttribute("disabled");
     slider.addEventListener("change", (e) => {
-      if (!e.target || !(e.target instanceof HTMLInputElement)) return;
-      const layer = this.simulation.world.entityLayers.get(entityLayerId);
-      if (!layer) {
-        throw new Error(
-          `Empty entity layer for given entityLayer id ${entityLayerId}`
-        );
-      }
-      for (const entity of layer.entities as Set<T>) {
+      for (const entity of layer.entities) {
         // @ts-ignore
         entity[property] = parseInt(e.target.value);
       }
+
       this.simulation.draw();
     });
   }
@@ -64,23 +86,36 @@ export default class UiController {
     });
   }
 
-  bindPlayPause(id: string) {
-    const btn = document.getElementById(id);
-    if (!btn || !(btn instanceof HTMLButtonElement)) {
-      throw new Error(
-        `Play/Pause button with id ${id}, does not exist, or is not a <button>`
-      );
-    }
+  get playPauseButton() {
+    if (this._playPauseButton) return this._playPauseButton;
+    this._playPauseButton =
+      this.getElement<HTMLButtonElement>("play-pause-button");
+    return this._playPauseButton;
+  }
 
-    btn.removeAttribute("disabled");
-    btn.addEventListener("click", () => {
+  bindPlayPause() {
+    this.playPauseButton.removeAttribute("disabled");
+    this.playPauseButton.addEventListener("click", () => {
       if (this.simulation.state === "playing") {
-        btn.classList.add("playing");
+        this.playPauseButton.classList.add("playing");
         this.simulation.stop();
       } else {
-        btn.classList.remove("playing");
+        this.playPauseButton.classList.remove("playing");
         this.simulation.start();
       }
+    });
+  }
+
+  get bindStepButton() {
+    if (this._stepButton) return this._stepButton;
+    this._stepButton = this.getElement<HTMLButtonElement>("step-button");
+    return this._stepButton;
+  }
+
+  bindStep() {
+    this.bindStepButton.removeAttribute("disabled");
+    this.bindStepButton.addEventListener("click", () => {
+      this.simulation.step();
     });
   }
 }

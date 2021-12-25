@@ -56,6 +56,8 @@
             max="6"
             step="0.01"
             type="range"
+            data-simulation-property="pheromoneSteerAngle"
+            data-world-layer="Ant"
           />
           <label for="pheromone-steer-angle">Pheromone steer angle</label>
         </div>
@@ -69,6 +71,8 @@
             max="15"
             step="0.01"
             type="range"
+            data-simulation-property="pheromoneSensorDistance"
+            data-world-layer="Ant"
           />
           <label for="pheromone-sensor-distance"
             >Pheromone sensor distance</label
@@ -84,16 +88,18 @@
             max="10"
             step="0.01"
             type="range"
+            data-simulation-property="pheromoneSensorRadius"
+            data-world-layer="Ant"
           />
           <label for="pheromone-sensor-radius">Pheromone sensor radius</label>
         </div>
 
         <div class="control__group control__group-playback">
-          <button id="play-pause" class="playback-button" disabled>
+          <button id="play-pause-button" class="playback-button" disabled>
             <span class="sr-only">Play / Pause</span>
           </button>
 
-          <button id="step" class="playback-button" disabled>
+          <button id="step-button" class="playback-button" disabled>
             <span class="sr-only">Step</span>
           </button>
         </div>

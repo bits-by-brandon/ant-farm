@@ -138,7 +138,7 @@ export default class Simulation {
     }
   }
 
-  _update(step: number) {
+  update(step: number) {
     this.world.update();
 
     for (const entity of this.world.entities) {
@@ -168,11 +168,13 @@ export default class Simulation {
   }
 
   step() {
-    this._update(this.stepCount);
+    this.update(this.stepCount);
     this.draw();
 
     this.stepCount++;
-    this.raf = requestAnimationFrame(this.step.bind(this));
+    if (this.state === "playing") {
+      this.raf = requestAnimationFrame(this.step.bind(this));
+    }
   }
 
   /**

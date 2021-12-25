@@ -129,11 +129,11 @@ body {
 }
 
 .playback-button:active {
-  transform: translateY(2px);
+  transform: scale(0.96);
 }
 
-#play-pause:before,
-#play-pause:after {
+#play-pause-button:before,
+#play-pause-button:after {
   content: "";
   display: block;
   position: absolute;
@@ -147,20 +147,23 @@ body {
   transition: transform 80ms ease-in-out;
 }
 
-#play-pause:before {
+#play-pause-button:before {
   transform: translate(calc(-50% - var(--pause-distance)), -50%);
 }
 
-#play-pause:after {
+#play-pause-button:after {
   transform: translate(calc(-50% + var(--pause-distance)), -50%);
 }
 
-#play-pause.playing:before {
+#play-pause-button.playing:before {
   transform: rotate(-60deg) translate(3.5px, -50%);
 }
 
-#play-pause.playing:after {
+#play-pause-button.playing:after {
   transform: rotate(60deg) translate(3.5px, -50%);
+}
+
+#step-button {
 }
 
 #main-canvas {
