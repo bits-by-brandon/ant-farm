@@ -3,6 +3,7 @@ import Vector from "./vector";
 
 export default abstract class Entity implements Updatable {
   readonly world: World;
+  propDescriptions?: UiPropList<Entity>;
   noise: Noise;
   pos: Vector;
 

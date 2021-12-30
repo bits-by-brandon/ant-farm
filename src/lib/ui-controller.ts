@@ -1,5 +1,7 @@
-import Simulation from "./simulation";
-import { visibilityLayerName } from "./models/world";
+import Simulation from "../models/simulation";
+import { visibilityLayerName } from "../models/world";
+import AntProps from "../models/ant/props";
+import Ant from "../models/ant";
 
 export default class UiController {
   readonly simulation: Simulation;
@@ -42,29 +44,30 @@ export default class UiController {
   }
 
   bindAllPropertySliders() {
-    this.propertySliders.forEach(this.bindPropertySlider.bind(this));
+    const controls = this.getElement<HTMLDivElement>("controls");
+    for (const prop of AntProps) {
+      if (prop.type === "range") {
+        const { input, container } = createRangeSlider(prop);
+        this.bindPropertySlider<Ant>(input, prop, "Ant");
+        controls.appendChild(container);
+      }
+    }
   }
 
-  bindPropertySlider(slider: HTMLInputElement) {
-    const property = slider.dataset.simulationProperty;
-    const layerId = slider.dataset.worldLayer;
-    if (!property || !layerId) return;
-
+  bindPropertySlider<T>(
+    slider: HTMLInputElement,
+    property: UiRangeProp<T>,
+    layerId: string
+  ) {
     const layer = this.simulation.world.entityLayers.get(layerId);
     if (!layer) throw Error(`No layer with id ${layerId}`);
 
-    const [entity] = layer.entities;
-    if (!(property in entity)) {
-      throw Error(`Entity ${entity.toString()} does not have property ${property}`)
-    }
-
-    // @ts-ignore;
-    slider.value = entity[property];
-    slider.removeAttribute("disabled");
+    slider.value = property.initialValue.toString();
     slider.addEventListener("change", (e) => {
       for (const entity of layer.entities) {
-        // @ts-ignore
-        entity[property] = parseInt(e.target.value);
+        if (!(property.key in entity)) continue;
+        // @ts-ignore - We know that the property.key exists on the given entity
+        entity[property.key] = parseInt(e.target.value);
       }
 
       this.simulation.draw();
@@ -118,4 +121,26 @@ export default class UiController {
       this.simulation.step();
     });
   }
+}
+
+function createRangeSlider<T>(property: UiRangeProp<T>) {
+  const container = document.createElement("div");
+  container.classList.add("control__container", "control__container--slider");
+
+  const label = document.createElement("label");
+  label.setAttribute("for", property.key.toString());
+  label.innerText = property.name;
+
+  const input = document.createElement("input");
+  input.setAttribute("disabled", "true");
+  input.setAttribute("id", property.key.toString());
+  input.setAttribute("type", "range");
+  input.setAttribute("min", property.min.toString());
+  input.setAttribute("max", property.max.toString());
+  input.setAttribute("step", property.increment.toString());
+  input.setAttribute("value", property.initialValue.toString());
+
+  container.appendChild(label);
+  container.appendChild(input);
+  return { input, container };
 }

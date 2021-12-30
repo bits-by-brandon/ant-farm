@@ -1,3 +1,4 @@
+import AntProps from "./props";
 import Entity from "../entity";
 import World from "../world";
 import Nest from "../nest";
@@ -10,6 +11,7 @@ import { Returning } from "./states/returning";
 import Pheromone, { PheromoneType } from "../pheromone";
 import { Rectangle } from "../../lib/rectangle";
 import lerp from "../../util/lerp";
+import getPropInitialValue from "../../util/get-prop";
 
 interface AntFactoryCreateArgs {
   x: number;
@@ -22,13 +24,13 @@ export default class Ant extends Entity implements StateMachine {
 
   readonly id: number;
   readonly nest: Nest;
+  readonly states: { [key: string]: State };
+  protected _state: State;
+  protected posDirtyBit: boolean;
+  protected lastPos: Vector;
+  protected lastGridPosition: VectorPair;
+  protected gridPosition: VectorPair;
   held: boolean;
-  state: State;
-  states: { [key: string]: State };
-  posDirtyBit: boolean;
-  lastPos: Vector;
-  lastGridPosition: VectorPair;
-  gridPosition: VectorPair;
   speed: number;
   wiggleRange: number;
   wiggleVariance: number;
@@ -44,7 +46,7 @@ export default class Ant extends Entity implements StateMachine {
   sensorRects: [Rectangle, Rectangle, Rectangle];
   rotation: number;
   _desiredRotation: number;
-  private steerAmount: number;
+  steerStrength: number;
 
   constructor(
     x: number,
@@ -55,52 +57,69 @@ export default class Ant extends Entity implements StateMachine {
     noise: Noise
   ) {
     super(new Vector(x, y), world, noise);
+    // Internal state values
     this.id = id;
-    this.speed = 0.5;
     this.nest = nest;
     this.held = false;
     this.lastPos = new Vector(x, y);
     this.gridPosition = { x, y } as VectorPair;
     this.lastGridPosition = { x, y } as VectorPair;
-    // Set this to true if the position grid has changed and we need to update the world position
-    this.posDirtyBit = false;
-
+    this.posDirtyBit = false; // Set this to true if the position grid has changed and we need to update the world position
     this._desiredRotation = getRandomNumber(0, 2 * Math.PI);
     this.rotation = this._desiredRotation;
-    this.wiggleRange = 0.003;
-    this.wiggleVariance = 0.0001;
-    this.turnChance = 0.01; // normalized percentage, once per step
-    this.turnRange = 1;
-    this.steerAmount = 0.1;
-    this.foodDetectionRange = 2;
-
-    this.pheromoneTimePeriod = 8; // in steps
-    this.pheromoneCountdown = this.pheromoneTimePeriod;
-    this.pheromoneSensorRadius = 4;
-    this.pheromoneSensorDistance = 7;
-    this.pheromoneSensorAngle = 1.0472; // in radians
-    this.pheromoneSteerAngle = 1.0472;
     this.sensorRects = [
       new Rectangle(0, 0, 0, 0),
       new Rectangle(0, 0, 0, 0),
       new Rectangle(0, 0, 0, 0),
     ];
-
     this.states = {
       foraging: new Foraging(this),
       returning: new Returning(this),
     } as const;
-    this.state = this.states.foraging;
+    this._state = this.states.foraging;
+
+    // UI public properties
+    this.speed = getPropInitialValue<Ant>("speed", AntProps);
+    this.wiggleRange = getPropInitialValue<Ant>("wiggleRange", AntProps);
+    this.wiggleVariance = getPropInitialValue<Ant>("wiggleVariance", AntProps);
+    this.turnChance = getPropInitialValue<Ant>("turnChance", AntProps);
+    this.turnRange = getPropInitialValue<Ant>("turnRange", AntProps);
+    this.steerStrength = getPropInitialValue<Ant>("steerStrength", AntProps);
+    this.foodDetectionRange = getPropInitialValue<Ant>(
+      "foodDetectionRange",
+      AntProps
+    );
+    this.pheromoneTimePeriod = getPropInitialValue<Ant>(
+      "pheromoneTimePeriod",
+      AntProps
+    );
+    this.pheromoneCountdown = this.pheromoneTimePeriod;
+    this.pheromoneSensorRadius = getPropInitialValue<Ant>(
+      "pheromoneSensorRadius",
+      AntProps
+    );
+    this.pheromoneSensorDistance = getPropInitialValue<Ant>(
+      "pheromoneSensorDistance",
+      AntProps
+    );
+    this.pheromoneSensorAngle = getPropInitialValue<Ant>(
+      "pheromoneSensorAngle",
+      AntProps
+    );
+    this.pheromoneSteerAngle = getPropInitialValue<Ant>(
+      "pheromoneSteerAngle",
+      AntProps
+    );
   }
 
-  setState(state: State) {
-    this.state.exit();
-    this.state = state;
-    this.state.enter();
+  set state(state: State) {
+    this._state.exit();
+    this._state = state;
+    this._state.enter();
   }
 
   update(step: number) {
-    this.state.update(step);
+    this._state.update(step);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -131,7 +150,11 @@ export default class Ant extends Entity implements StateMachine {
     this.pos.x += vel.x;
     this.pos.y += vel.y;
 
-    this.rotation = lerp(this.rotation, this.desiredRotation, this.steerAmount);
+    this.rotation = lerp(
+      this.rotation,
+      this.desiredRotation,
+      this.steerStrength
+    );
   }
 
   updateGridPosition() {

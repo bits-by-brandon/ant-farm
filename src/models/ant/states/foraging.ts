@@ -13,9 +13,7 @@ export class Foraging implements State {
   }
 
   enter() {}
-  exit() {
-    // No op
-  }
+  exit() {}
 
   update(step: number) {
     this.turnRandomDirection(step);
@@ -38,7 +36,7 @@ export class Foraging implements State {
       food.take();
       this.parent.held = true;
       // start returning with the food
-      this.parent.setState(this.parent.states.returning);
+      this.parent.state = this.parent.states.returning;
     }
   }
 

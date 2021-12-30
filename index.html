@@ -10,9 +10,10 @@
     <img src="" alt="" id="img-map" />
     <main>
       <canvas id="main-canvas" style="border: 1px #333 solid"></canvas>
-      <div class="controls">
+      <div id="controls" class="controls">
         <h1>Ant Simulator</h1>
-        <div class="control__group control__group-file">
+        <div class="control__container control__container-file">
+          <label for="map-upload-input">Select map image</label>
           <input
             id="map-upload-input"
             type="file"
@@ -20,89 +21,41 @@
             value=""
             alt="hi"
           />
-          <label for="map-upload-input">Select map image</label>
         </div>
-        <div class="control__group">
-          <input id="show-sensor" type="checkbox" disabled />
+        <div class="control__container control__container--toggle">
           <label for="show-sensor">Show Sensor</label>
+          <input id="show-sensor" type="checkbox" disabled />
         </div>
 
-        <div class="control__group">
-          <input id="show-ant-quadtree" type="checkbox" disabled />
+        <div class="control__container control__container--toggle">
           <label for="show-ant-quadtree">Show Ant Quadtree</label>
+          <input id="show-ant-quadtree" type="checkbox" disabled />
         </div>
 
-        <div class="control__group">
-          <input id="show-food-pheromone" type="checkbox" checked disabled />
+        <div class="control__container control__container--toggle">
           <label for="show-food-pheromone">Show Food Pheromone</label>
+          <input id="show-food-pheromone" type="checkbox" checked disabled />
         </div>
 
-        <div class="control__group">
-          <input id="show-home-pheromone" type="checkbox" checked disabled />
+        <div class="control__container control__container--toggle">
           <label for="show-home-pheromone">Show Home Pheromone</label>
+          <input id="show-home-pheromone" type="checkbox" checked disabled />
         </div>
 
-        <div class="control__group">
-          <input id="show-pheromone-quadtree" type="checkbox" disabled />
+        <div class="control__container control__container--toggle">
           <label for="show-pheromone-quadtree">Show Pheromone Quadtree</label>
+          <input id="show-pheromone-quadtree" type="checkbox" disabled />
         </div>
+      </div>
 
-        <div class="control__group control__group-slider">
-          <input
-            disabled
-            value="0"
-            id="pheromone-steer-angle"
-            min="0"
-            max="6"
-            step="0.01"
-            type="range"
-            data-simulation-property="pheromoneSteerAngle"
-            data-world-layer="Ant"
-          />
-          <label for="pheromone-steer-angle">Pheromone steer angle</label>
-        </div>
+      <div id="playback-panel">
+        <button id="play-pause-button" class="playback-button" disabled>
+          <span class="sr-only">Play / Pause</span>
+        </button>
 
-        <div class="control__group control__group-slider">
-          <input
-            disabled
-            value="0"
-            id="pheromone-sensor-distance"
-            min="1"
-            max="15"
-            step="0.01"
-            type="range"
-            data-simulation-property="pheromoneSensorDistance"
-            data-world-layer="Ant"
-          />
-          <label for="pheromone-sensor-distance"
-            >Pheromone sensor distance</label
-          >
-        </div>
-
-        <div class="control__group control__group-slider">
-          <input
-            disabled
-            value="0"
-            id="pheromone-sensor-radius"
-            min="2"
-            max="10"
-            step="0.01"
-            type="range"
-            data-simulation-property="pheromoneSensorRadius"
-            data-world-layer="Ant"
-          />
-          <label for="pheromone-sensor-radius">Pheromone sensor radius</label>
-        </div>
-
-        <div class="control__group control__group-playback">
-          <button id="play-pause-button" class="playback-button" disabled>
-            <span class="sr-only">Play / Pause</span>
-          </button>
-
-          <button id="step-button" class="playback-button" disabled>
-            <span class="sr-only">Step</span>
-          </button>
-        </div>
+        <button id="step-button" class="playback-button" disabled>
+          <span class="sr-only">Step</span>
+        </button>
       </div>
     </main>
 

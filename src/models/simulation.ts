@@ -1,11 +1,11 @@
 import { makeNoise2D } from "fast-simplex-noise";
 
-import World, { visibilityLayerName } from "./models/world";
-import Nest from "./models/nest";
-import { AntFactory } from "./models/ant";
-import { FoodFactory } from "./models/food";
-import MapHelper from "./lib/map-helper";
-import { imageColorMap } from "./config";
+import World, { visibilityLayerName } from "./world";
+import Nest from "./nest";
+import { AntFactory } from "./ant";
+import { FoodFactory } from "./food";
+import MapHelper from "../lib/map-helper";
+import { imageColorMap } from "../config";
 
 type SimulationState = "playing" | "paused";
 

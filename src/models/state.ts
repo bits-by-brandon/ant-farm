@@ -1,7 +1,6 @@
 export interface StateMachine {
   state: State;
-  states: { [key: string]: State };
-  setState: (state: State) => void;
+  readonly states: { [key: string]: State };
 }
 
 export interface State {

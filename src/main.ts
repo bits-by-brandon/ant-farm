@@ -1,9 +1,9 @@
 import "./styles/style.css";
 import "./styles/typography.css";
 
-import Simulation from "./simulation";
+import Simulation from "./models/simulation";
 import ImageHelper from "./lib/image-helper";
-import UiController from "./ui-controller";
+import UiController from "./lib/ui-controller";
 
 const uploadButton = document.getElementById(
   "map-upload-input"
@@ -24,24 +24,29 @@ async function handleOnload(imageSrc: any) {
     imageSrc
   );
 
-  const simulation = await Simulation.create(buffer, {
-    antCount: 200,
-    width,
-    height,
-  });
-
+  const simulationProps = { antCount: 200, width, height };
+  const simulation = await Simulation.create(buffer, simulationProps);
   const uiController = new UiController(simulation);
 
   uiController.bindVisibilityLayerToggle("show-sensor", "sensor");
   uiController.bindVisibilityLayerToggle("show-ant-quadtree", "antQTree");
-  uiController.bindVisibilityLayerToggle("show-food-pheromone", "foodPheromone");
-  uiController.bindVisibilityLayerToggle("show-home-pheromone", "homePheromone");
-  uiController.bindVisibilityLayerToggle( "show-pheromone-quadtree", "pheromoneQTree" );
+  uiController.bindVisibilityLayerToggle(
+    "show-food-pheromone",
+    "foodPheromone"
+  );
+  uiController.bindVisibilityLayerToggle(
+    "show-home-pheromone",
+    "homePheromone"
+  );
+  uiController.bindVisibilityLayerToggle(
+    "show-pheromone-quadtree",
+    "pheromoneQTree"
+  );
 
   uiController.bindAllPropertySliders();
   uiController.hideMapInput();
   uiController.bindPlayPause();
   uiController.bindStep();
 
-  simulation.start();
+  simulation.draw();
 }

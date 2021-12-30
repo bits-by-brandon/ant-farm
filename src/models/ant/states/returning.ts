@@ -15,7 +15,7 @@ export class Returning implements State {
   update() {
     // begin foraging if nothing is held
     if (!this.parent.held) {
-      this.parent.setState(this.parent.states.foraging);
+      this.parent.state = this.parent.states.foraging;
       return;
     }
 
@@ -32,7 +32,7 @@ export class Returning implements State {
     if (this.parent.nest.boundary.contains(this.parent.pos)) {
       this.parent.desiredRotation += Math.PI;
       this.parent.held = false;
-      this.parent.setState(this.parent.states.foraging);
+      this.parent.state = this.parent.states.foraging;
       return;
     }
   }
