@@ -9,13 +9,13 @@ import { imageColorMap } from "../config";
 
 type SimulationState = "playing" | "paused";
 
-interface SimulationCreateProps {
+export interface SimulationCreateProps {
   antCount: number;
   width: number;
   height: number;
 }
 
-interface SimulationProps extends SimulationCreateProps {
+export interface SimulationProps extends SimulationCreateProps {
   world: World;
   noise: Noise;
   terrainBitmap: ImageBitmap;
@@ -200,7 +200,6 @@ export default class Simulation {
     mapBuffer: ArrayBuffer,
     props: SimulationCreateProps
   ): Promise<Simulation> {
-    // TODO: Something went weird after converting the Uint32Array to Uint8Array
     const mapData = new Uint8Array(mapBuffer);
     const [terrainData, foodData] = MapHelper.mapWorldDataToLayers(mapData, [
       imageColorMap.Wall,

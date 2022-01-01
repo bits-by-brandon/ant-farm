@@ -5,7 +5,7 @@ import Ant from "./index";
 
 const AntProps: UiPropList<Ant> = [
   {
-    key: "speed",
+    propKey: "speed",
     name: "Speed",
     type: "range",
     min: 0.1,
@@ -14,7 +14,7 @@ const AntProps: UiPropList<Ant> = [
     initialValue: 0.5,
   },
   {
-    key: "wiggleRange",
+    propKey: "wiggleRange",
     name: "Wiggle Range",
     type: "range",
     increment: 0.001,
@@ -23,7 +23,7 @@ const AntProps: UiPropList<Ant> = [
     initialValue: 0.003,
   },
   {
-    key: "wiggleVariance",
+    propKey: "wiggleVariance",
     name: "Wiggle Variance",
     type: "range",
     min: 0,
@@ -32,7 +32,7 @@ const AntProps: UiPropList<Ant> = [
     initialValue: 0.0001,
   },
   {
-    key: "turnChance",
+    propKey: "turnChance",
     name: "Turn Chance",
     description:
       "% Chance that the ant will make a turn per step. Normalized value",
@@ -43,7 +43,7 @@ const AntProps: UiPropList<Ant> = [
     initialValue: 0.01,
   },
   {
-    key: "turnRange",
+    propKey: "turnRange",
     name: "Turn Range",
     description:
       "Max angle of the ant turning behavior. Value is half theta of the full turning range.",
@@ -54,7 +54,7 @@ const AntProps: UiPropList<Ant> = [
     initialValue: 1,
   },
   {
-    key: "steerStrength",
+    propKey: "steerStrength",
     name: "Steer Strength",
     description:
       "Strength of the steering force. Lower values result in larger turn radii.",
@@ -65,7 +65,7 @@ const AntProps: UiPropList<Ant> = [
     initialValue: 0.1,
   },
   {
-    key: "foodDetectionRange",
+    propKey: "foodDetectionRange",
     name: "Food Detection Range",
     description: "Minimum food pickup distance",
     type: "range",
@@ -75,7 +75,7 @@ const AntProps: UiPropList<Ant> = [
     initialValue: 2,
   },
   {
-    key: "pheromoneTimePeriod",
+    propKey: "pheromoneTimePeriod",
     name: "Pheromone Step Period",
     description: "Amount of steps between placing of new pheromones.",
     type: "range",
@@ -86,7 +86,7 @@ const AntProps: UiPropList<Ant> = [
     group: "pheromones",
   },
   {
-    key: "pheromoneSensorRadius",
+    propKey: "pheromoneSensorRadius",
     name: "Pheromone Sensor Radius",
     description: "Radius of the ant pheromone sensors.",
     type: "range",
@@ -97,7 +97,7 @@ const AntProps: UiPropList<Ant> = [
     group: "pheromones",
   },
   {
-    key: "pheromoneSensorDistance",
+    propKey: "pheromoneSensorDistance",
     name: "Pheromone Sensor Distance",
     description: "Distance between the ant and its pheromone sensors",
     type: "range",
@@ -108,7 +108,7 @@ const AntProps: UiPropList<Ant> = [
     group: "pheromones",
   },
   {
-    key: "pheromoneSensorAngle",
+    propKey: "pheromoneSensorAngle",
     name: "Pheromone Sensor Angle",
     description:
       "Angle in theta between the left or right sensor and the center sensor.",
@@ -120,7 +120,7 @@ const AntProps: UiPropList<Ant> = [
     group: "pheromones",
   },
   {
-    key: "pheromoneSteerAngle",
+    propKey: "pheromoneSteerAngle",
     name: "Pheromone Steer Angle",
     description:
       "Angle in theta for the ant to turn when detecting a relevant pheromone.",

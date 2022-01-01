@@ -65,9 +65,9 @@ export default class UiController {
     slider.value = property.initialValue.toString();
     slider.addEventListener("change", (e) => {
       for (const entity of layer.entities) {
-        if (!(property.key in entity)) continue;
+        if (!(property.propKey in entity)) continue;
         // @ts-ignore - We know that the property.key exists on the given entity
-        entity[property.key] = parseInt(e.target.value);
+        entity[property.propKey] = parseInt(e.target.value);
       }
 
       this.simulation.draw();
@@ -128,12 +128,12 @@ function createRangeSlider<T>(property: UiRangeProp<T>) {
   container.classList.add("control__container", "control__container--slider");
 
   const label = document.createElement("label");
-  label.setAttribute("for", property.key.toString());
+  label.setAttribute("for", property.propKey.toString());
   label.innerText = property.name;
 
   const input = document.createElement("input");
   input.setAttribute("disabled", "true");
-  input.setAttribute("id", property.key.toString());
+  input.setAttribute("id", property.propKey.toString());
   input.setAttribute("type", "range");
   input.setAttribute("min", property.min.toString());
   input.setAttribute("max", property.max.toString());

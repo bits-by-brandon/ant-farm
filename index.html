@@ -7,58 +7,7 @@
     <title>Vite App</title>
   </head>
   <body>
-    <img src="" alt="" id="img-map" />
-    <main>
-      <canvas id="main-canvas" style="border: 1px #333 solid"></canvas>
-      <div id="controls" class="controls">
-        <h1>Ant Simulator</h1>
-        <div class="control__container control__container-file">
-          <label for="map-upload-input">Select map image</label>
-          <input
-            id="map-upload-input"
-            type="file"
-            accept="image/*"
-            value=""
-            alt="hi"
-          />
-        </div>
-        <div class="control__container control__container--toggle">
-          <label for="show-sensor">Show Sensor</label>
-          <input id="show-sensor" type="checkbox" disabled />
-        </div>
-
-        <div class="control__container control__container--toggle">
-          <label for="show-ant-quadtree">Show Ant Quadtree</label>
-          <input id="show-ant-quadtree" type="checkbox" disabled />
-        </div>
-
-        <div class="control__container control__container--toggle">
-          <label for="show-food-pheromone">Show Food Pheromone</label>
-          <input id="show-food-pheromone" type="checkbox" checked disabled />
-        </div>
-
-        <div class="control__container control__container--toggle">
-          <label for="show-home-pheromone">Show Home Pheromone</label>
-          <input id="show-home-pheromone" type="checkbox" checked disabled />
-        </div>
-
-        <div class="control__container control__container--toggle">
-          <label for="show-pheromone-quadtree">Show Pheromone Quadtree</label>
-          <input id="show-pheromone-quadtree" type="checkbox" disabled />
-        </div>
-      </div>
-
-      <div id="playback-panel">
-        <button id="play-pause-button" class="playback-button" disabled>
-          <span class="sr-only">Play / Pause</span>
-        </button>
-
-        <button id="step-button" class="playback-button" disabled>
-          <span class="sr-only">Step</span>
-        </button>
-      </div>
-    </main>
-
-    <script type="module" src="/src/main.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

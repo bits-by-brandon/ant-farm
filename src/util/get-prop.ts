@@ -6,7 +6,7 @@ export default function getPropInitialValue<T>(
     (property) => property.type === "range"
   ) as UiRangeProp<T>[];
 
-  const found = range.find((property) => key === property.key);
+  const found = range.find((property) => key === property.propKey);
   if (!found)
     throw new Error(
       `The ${key} property does not exist in the UI Prop List. Ensure the props.ts file has an entry with the key ${key}`
