@@ -212,12 +212,13 @@ export default class Ant extends Entity implements StateMachine {
     }
   }
 
-  dropPheromone(type: PheromoneType) {
+  dropPheromone(type: PheromoneType, strength?: number) {
     const pheromone = new Pheromone(
       type,
       this.pos.copy(),
       this.world,
-      this.noise
+      this.noise,
+      strength
     );
     this.world.insert(pheromone, "Pheromone");
   }

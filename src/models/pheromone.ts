@@ -15,9 +15,9 @@ export default class Pheromone extends Entity {
   static maxStrength = 100;
   static decayRate = 0.15;
 
-  constructor(type: PheromoneType, pos: Vector, world: World, noise: Noise) {
+  constructor(type: PheromoneType, pos: Vector, world: World, noise: Noise, strength?: number) {
     super(pos, world, noise);
-    this.strength = Pheromone.maxStrength;
+    this.strength = strength || Pheromone.maxStrength;
     this.type = type;
   }
 

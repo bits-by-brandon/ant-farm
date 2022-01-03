@@ -2,20 +2,25 @@ import { State } from "../../state";
 import Ant from "../index";
 import map from "../../../util/map";
 import Food from "../../food";
-import { PheromoneType } from "../../pheromone";
+import Pheromone, { PheromoneType } from "../../pheromone";
 import { Rectangle } from "../../../lib/rectangle";
 
 export class Foraging implements State {
   private parent: Ant;
+  private homeStrength: number;
 
   constructor(parent: Ant) {
     this.parent = parent;
+    this.homeStrength = Pheromone.maxStrength;
   }
 
-  enter() {}
+  enter() {
+    this.homeStrength = Pheromone.maxStrength;
+  }
   exit() {}
 
   update(step: number) {
+    this.homeStrength -= Pheromone.decayRate;
     this.turnRandomDirection(step);
     this.parent.updatePosition();
     this.parent.terrainCollide();
@@ -23,9 +28,8 @@ export class Foraging implements State {
     this.parent.updateGridPosition();
     this.parent.updateSensorRects();
     this.parent.followPheromone(PheromoneType.Food);
-
     this.parent.updatePheromone(() => {
-      this.parent.dropPheromone(PheromoneType.Home);
+      this.parent.dropPheromone(PheromoneType.Home, this.homeStrength);
     });
 
     // Check if food shares tile with ant, if so:
