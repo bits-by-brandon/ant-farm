@@ -190,6 +190,7 @@ export default class Simulation extends Observable {
    */
   start() {
     this.state = "playing";
+    this.emit("start", () => {});
     this.raf = requestAnimationFrame(this.step.bind(this));
   }
 
@@ -198,6 +199,7 @@ export default class Simulation extends Observable {
    */
   stop() {
     this.state = "paused";
+    this.emit("stop", () => {});
     cancelAnimationFrame(this.raf);
   }
 

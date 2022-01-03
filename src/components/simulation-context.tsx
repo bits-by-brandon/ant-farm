@@ -5,8 +5,11 @@ export interface SimulationContextProviderProps {
   children: ReactNode;
 }
 
+export type SimulationState = "playing" | "paused" | "uninitialized";
+
 export interface ISimulationContext {
   simulation: Simulation | null;
+  simulationState: SimulationState;
   stop: () => void;
   start: () => void;
   setSimulationProps: React.Dispatch<
@@ -22,6 +25,7 @@ class SimulationContextInitError extends Error {
 
 export const SimulationContext = React.createContext<ISimulationContext>({
   simulation: null,
+  simulationState: "uninitialized",
   stop: () => {
     throw new SimulationContextInitError("stop");
   },
@@ -38,32 +42,34 @@ export function SimulationContextProvider({
 }: SimulationContextProviderProps) {
   const simulationRef = useRef<Simulation | null>(null);
   const [initialized, setInitialized] = useState<boolean>(false);
-  const [simulationState, setSimulationState] = useState<
-    "playing" | "paused" | "uninitialized"
-  >("uninitialized");
-  // const [mapBuffer, setMapBuffer] = useState<ArrayBuffer | null>(null);
+  const [simulationState, setSimulationState] =
+    useState<SimulationState>("uninitialized");
   const [simulationProps, setSimulationProps] =
     useState<SimulationCreateProps | null>(null);
 
   function stop() {
     if (initialized && simulationRef.current && simulationState === "playing") {
       simulationRef.current.stop();
+      setSimulationState("paused");
     }
   }
 
   function start() {
     if (initialized && simulationRef.current && simulationState === "paused") {
       simulationRef.current.start();
+      setSimulationState("playing");
     }
   }
 
   function handleSimulationStop() {
     if (!simulationRef.current) return;
+    console.log("Paused");
     setSimulationState("paused");
   }
 
   function handleSimulationStart() {
     if (!simulationRef.current) return;
+    console.log("Started");
     setSimulationState("playing");
   }
 
@@ -90,6 +96,7 @@ export function SimulationContextProvider({
       value={{
         simulation: simulationRef.current,
         setSimulationProps,
+        simulationState,
         stop,
         start,
       }}

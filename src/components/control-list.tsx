@@ -1,5 +1,8 @@
-import EntitySliderInput from "./entity-slider-input";
 import { RecoilState } from "recoil";
+import { useContext } from "react";
+
+import EntitySliderInput from "./entity-slider-input";
+import { SimulationContext } from "./simulation-context";
 
 export interface ControlListProps<T> {
   entityProps: UiProp<T>[];
@@ -12,6 +15,8 @@ export default function ControlList<T>({
   name,
   atomFamily,
 }: ControlListProps<T>) {
+  const { simulationState } = useContext(SimulationContext);
+
   return (
     <div className="controls__control-list">
       <h3>{name}</h3>
@@ -22,6 +27,7 @@ export default function ControlList<T>({
               <EntitySliderInput<T>
                 {...entityProp}
                 layerId="Ant"
+                disabled={simulationState === "uninitialized"}
                 atomFamily={atomFamily}
                 key={entityProp.propKey.toString()}
               />

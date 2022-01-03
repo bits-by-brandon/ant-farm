@@ -16,7 +16,7 @@ export default class Observable {
     let subscribers = this.events.get(event);
     if (subscribers) return subscribers;
     subscribers = new Set() as Subscribers;
-    this.events.set(event, new Set());
+    this.events.set(event, subscribers);
     return subscribers;
   }
 
