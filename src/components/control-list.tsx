@@ -1,15 +1,16 @@
 import EntitySliderInput from "./entity-slider-input";
+import { RecoilState } from "recoil";
 
 export interface ControlListProps<T> {
-  entityProps: MutableUiProp<T>[];
-  onChange: (key: keyof T, value: number) => void;
+  entityProps: UiProp<T>[];
   name: string;
+  atomFamily: (param: keyof T) => RecoilState<number | boolean>;
 }
 
 export default function ControlList<T>({
   entityProps,
-  onChange,
   name,
+  atomFamily,
 }: ControlListProps<T>) {
   return (
     <div className="controls__control-list">
@@ -18,11 +19,11 @@ export default function ControlList<T>({
         switch (entityProp.type) {
           case "range":
             return (
-              <EntitySliderInput
+              <EntitySliderInput<T>
                 {...entityProp}
+                layerId="Ant"
+                atomFamily={atomFamily}
                 key={entityProp.propKey.toString()}
-                value={entityProp.value}
-                onChange={(newValue) => onChange(entityProp.propKey, newValue)}
               />
             );
           case "boolean":

@@ -6,22 +6,25 @@ import { AntFactory } from "./ant";
 import { FoodFactory } from "./food";
 import MapHelper from "../lib/map-helper";
 import { imageColorMap } from "../config";
+import Observable from "./observable";
 
 type SimulationState = "playing" | "paused";
 
 export interface SimulationCreateProps {
+  mapBuffer: ArrayBuffer;
   antCount: number;
   width: number;
   height: number;
 }
 
-export interface SimulationProps extends SimulationCreateProps {
+export interface SimulationProps
+  extends Omit<SimulationCreateProps, "mapBuffer"> {
   world: World;
   noise: Noise;
   terrainBitmap: ImageBitmap;
 }
 
-export default class Simulation {
+export default class Simulation extends Observable {
   readonly antCount: number;
   readonly ctx: CanvasRenderingContext2D;
   readonly terrainBitmap: ImageBitmap;
@@ -35,6 +38,7 @@ export default class Simulation {
   state: SimulationState;
 
   constructor(props: SimulationProps) {
+    super();
     this.antCount = props.antCount;
     this.width = props.width;
     this.height = props.height;
@@ -138,6 +142,10 @@ export default class Simulation {
     }
   }
 
+  setProp<T>(layerId: string, propKey: keyof T, value: any) {
+    return this.world.setProp<T>(layerId, propKey, value);
+  }
+
   update(step: number) {
     this.world.update();
 
@@ -193,13 +201,28 @@ export default class Simulation {
     cancelAnimationFrame(this.raf);
   }
 
+  subscribe(
+    event: "start",
+    callback: (details: undefined) => void
+  ): () => boolean;
+  subscribe(
+    event: "stop",
+    callback: (details: undefined) => void
+  ): () => boolean;
+  subscribe(event: any, callback: (details?: any) => void): () => boolean {
+    return super.subscribe(event, callback);
+  }
+
   /**
    * Creates and initializes a new Simulation object
    */
-  static async create(
-    mapBuffer: ArrayBuffer,
-    props: SimulationCreateProps
-  ): Promise<Simulation> {
+  static async create({
+    mapBuffer,
+    width,
+    height,
+    antCount,
+  }: SimulationCreateProps): Promise<Simulation> {
+    console.log("create simulation");
     const mapData = new Uint8Array(mapBuffer);
     const [terrainData, foodData] = MapHelper.mapWorldDataToLayers(mapData, [
       imageColorMap.Wall,
@@ -209,26 +232,21 @@ export default class Simulation {
     // Create the terrainBitmap as the draw layer
     const terrainBitmap = await MapHelper.terrainDataToBitmap(
       terrainData,
-      props.width,
-      props.height
+      width,
+      height
     );
 
     // Init world
-    const world = new World({
-      width: props.width,
-      height: props.height,
-      entities: [],
-      terrainData,
-    });
+    const world = new World({ width, height, entities: [], terrainData });
 
     // Init perlin noise
     const noise: Noise = makeNoise2D();
 
     // Create the simulation
     const simulation = new Simulation({
-      antCount: props.antCount,
-      width: props.width,
-      height: props.height,
+      antCount,
+      width,
+      height,
       world,
       noise,
       terrainBitmap,

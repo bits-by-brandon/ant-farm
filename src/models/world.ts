@@ -1,6 +1,6 @@
 import Entity from "./entity";
 import Quadtree from "../lib/quadtree";
-import {Rectangle} from "../lib/rectangle";
+import { Rectangle } from "../lib/rectangle";
 
 type EntityLayer = {
   entities: Set<Entity>;
@@ -57,6 +57,18 @@ export default class World {
         "Provided buffer is not the right size. Provide a buffer of size"
       );
     }
+  }
+
+  setProp<T>(layerId: string, propKey: keyof T, value: any): boolean {
+    const layer = this.entityLayers.get(layerId);
+    if (!layer) return false;
+
+    for (const entity of layer.entities) {
+      if (!(propKey in entity)) continue;
+      // @ts-ignore
+      entity[propKey] = value;
+    }
+    return true;
   }
 
   /**
@@ -127,17 +139,20 @@ export default class World {
    * @param range
    * @param layerId
    */
-  query<T extends Entity = Entity>(range: Rectangle, layerId = DEFAULT_LAYER_ID): T[] {
+  query<T extends Entity = Entity>(
+    range: Rectangle,
+    layerId = DEFAULT_LAYER_ID
+  ): T[] {
     if (layerId === "ALL") {
       const found: T[] = [];
       for (const layer of this.entityLayers.values()) {
-        found.push(...layer.qtree.query(range) as T[]);
+        found.push(...(layer.qtree.query(range) as T[]));
       }
       return found;
     }
 
     const layer = this.entityLayers.get(layerId);
-    return layer?.qtree.query(range) as T[] || [];
+    return (layer?.qtree.query(range) as T[]) || [];
   }
 
   getTerrainValue(x: number, y: number) {

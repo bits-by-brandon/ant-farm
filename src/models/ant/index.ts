@@ -20,8 +20,6 @@ interface AntFactoryCreateArgs {
 }
 
 export default class Ant extends Entity implements StateMachine {
-  static type = "Ant";
-
   readonly id: number;
   readonly nest: Nest;
   readonly states: { [key: string]: State };

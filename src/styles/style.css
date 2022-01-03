@@ -55,7 +55,7 @@ body {
   flex-direction: column;
   padding: var(--vertical-padding) 0;
   font-size: 12px;
-  border-bottom: 1px solid var(--neutral-2);
+  border-bottom: 1px solid var(--neutral-3);
 }
 
 .control__container--toggle {
@@ -134,7 +134,7 @@ body {
   border-radius: var(--radius-small);
 }
 
-#playback-panel {
+.playback-panel {
   --padding: 8px;
 
   position: fixed;
@@ -185,8 +185,8 @@ body {
   transform: scale(0.96);
 }
 
-#play-pause-button:before,
-#play-pause-button:after {
+.play-pause-button:before,
+.play-pause-button:after {
   content: "";
   display: block;
   position: absolute;
@@ -200,23 +200,23 @@ body {
   transition: transform 80ms ease-in-out;
 }
 
-#play-pause-button:before {
+.play-pause-button:before {
   transform: translate(calc(-50% - var(--pause-distance)), -50%);
 }
 
-#play-pause-button:after {
+.play-pause-button:after {
   transform: translate(calc(-50% + var(--pause-distance)), -50%);
 }
 
-#play-pause-button.playing:before {
+.play-pause-button.playing:before {
   transform: rotate(-60deg) translate(3.5px, -50%);
 }
 
-#play-pause-button.playing:after {
+.play-pause-button.playing:after {
   transform: rotate(60deg) translate(3.5px, -50%);
 }
 
-#step-button {
+.step-button {
 }
 
 #main-canvas {

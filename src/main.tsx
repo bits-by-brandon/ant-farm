@@ -1,25 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { RecoilRoot } from "recoil";
 import "./styles/style.css";
 import "./styles/typography.css";
 
-// import Simulation from "./models/simulation";
-// import ImageHelper from "./lib/image-helper";
-// import UiController from "./lib/ui-controller";
 import App from "./components/app";
-
-// const uploadButton = document.getElementById(
-//   "map-upload-input"
-// ) as HTMLInputElement;
-
-// uploadButton.addEventListener("change", (event) => {
-//   const input = event.target as HTMLInputElement;
-//   if (!input.files) return;
-//
-//   const reader = new FileReader();
-//   reader.onload = () => handleOnload(reader.result);
-//   reader.readAsDataURL(input.files[0]);
-// });
+import { SimulationContextProvider } from "./components/simulation-context";
 
 // async function handleOnload(imageSrc: any) {
 //   if (typeof imageSrc !== "string") throw new Error("No map file found");
@@ -56,7 +42,11 @@ import App from "./components/app";
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <RecoilRoot>
+      <SimulationContextProvider>
+        <App />
+      </SimulationContextProvider>
+    </RecoilRoot>
   </React.StrictMode>,
   document.getElementById("root")
 );
