@@ -40,4 +40,4 @@ type VectorPair = {
   y: number;
 };
 
-type Noise = (x: number, y: number) => number;
+type NoiseFunc = (x: number, y: number) => number;

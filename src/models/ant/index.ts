@@ -12,6 +12,8 @@ import Pheromone, { PheromoneType } from "../pheromone";
 import { Rectangle } from "../../lib/rectangle";
 import lerp from "../../util/lerp";
 import getPropInitialValue from "../../util/get-prop";
+import map from "../../util/map";
+import Food from "../food";
 
 interface AntFactoryCreateArgs {
   x: number;
@@ -46,14 +48,7 @@ export default class Ant extends Entity implements StateMachine {
   _desiredRotation: number;
   steerStrength: number;
 
-  constructor(
-    x: number,
-    y: number,
-    id: number,
-    nest: Nest,
-    world: World,
-    noise: Noise
-  ) {
+  constructor(x: number, y: number, id: number, nest: Nest, world: World, noise: NoiseFunc) {
     super(new Vector(x, y), world, noise);
     // Internal state values
     this.id = id;
@@ -65,11 +60,7 @@ export default class Ant extends Entity implements StateMachine {
     this.posDirtyBit = false; // Set this to true if the position grid has changed and we need to update the world position
     this._desiredRotation = getRandomNumber(0, 2 * Math.PI);
     this.rotation = this._desiredRotation;
-    this.sensorRects = [
-      new Rectangle(0, 0, 0, 0),
-      new Rectangle(0, 0, 0, 0),
-      new Rectangle(0, 0, 0, 0),
-    ];
+    this.sensorRects = [new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0)];
     this.states = {
       foraging: new Foraging(this),
       returning: new Returning(this),
@@ -83,31 +74,13 @@ export default class Ant extends Entity implements StateMachine {
     this.turnChance = getPropInitialValue<Ant>("turnChance", AntProps);
     this.turnRange = getPropInitialValue<Ant>("turnRange", AntProps);
     this.steerStrength = getPropInitialValue<Ant>("steerStrength", AntProps);
-    this.foodDetectionRange = getPropInitialValue<Ant>(
-      "foodDetectionRange",
-      AntProps
-    );
-    this.pheromoneTimePeriod = getPropInitialValue<Ant>(
-      "pheromoneTimePeriod",
-      AntProps
-    );
+    this.foodDetectionRange = getPropInitialValue<Ant>("foodDetectionRange", AntProps);
+    this.pheromoneTimePeriod = getPropInitialValue<Ant>("pheromoneTimePeriod", AntProps);
     this.pheromoneCountdown = this.pheromoneTimePeriod;
-    this.pheromoneSensorRadius = getPropInitialValue<Ant>(
-      "pheromoneSensorRadius",
-      AntProps
-    );
-    this.pheromoneSensorDistance = getPropInitialValue<Ant>(
-      "pheromoneSensorDistance",
-      AntProps
-    );
-    this.pheromoneSensorAngle = getPropInitialValue<Ant>(
-      "pheromoneSensorAngle",
-      AntProps
-    );
-    this.pheromoneSteerAngle = getPropInitialValue<Ant>(
-      "pheromoneSteerAngle",
-      AntProps
-    );
+    this.pheromoneSensorRadius = getPropInitialValue<Ant>("pheromoneSensorRadius", AntProps);
+    this.pheromoneSensorDistance = getPropInitialValue<Ant>("pheromoneSensorDistance", AntProps);
+    this.pheromoneSensorAngle = getPropInitialValue<Ant>("pheromoneSensorAngle", AntProps);
+    this.pheromoneSteerAngle = getPropInitialValue<Ant>("pheromoneSteerAngle", AntProps);
   }
 
   set state(state: State) {
@@ -148,11 +121,7 @@ export default class Ant extends Entity implements StateMachine {
     this.pos.x += vel.x;
     this.pos.y += vel.y;
 
-    this.rotation = lerp(
-      this.rotation,
-      this.desiredRotation,
-      this.steerStrength
-    );
+    this.rotation = lerp(this.rotation, this.desiredRotation, this.steerStrength);
   }
 
   updateGridPosition() {
@@ -182,12 +151,7 @@ export default class Ant extends Entity implements StateMachine {
    * Clamps ants to the edge of the map and reflects their direction
    */
   mapEdgeCollide() {
-    if (
-      this.pos.y > this.world.height ||
-      this.pos.x > this.world.width ||
-      this.pos.x < 0 ||
-      this.pos.y < 0
-    ) {
+    if (this.pos.y > this.world.height || this.pos.x > this.world.width || this.pos.x < 0 || this.pos.y < 0) {
       this.desiredRotation *= Math.PI;
       this.rotation *= Math.PI;
     }
@@ -199,45 +163,30 @@ export default class Ant extends Entity implements StateMachine {
    * Terrain detection
    */
   terrainCollide() {
-    const terrainValue = this.world.getTerrainValue(
-      Math.floor(this.pos.x),
-      Math.floor(this.pos.y)
-    );
+    const terrainValue = this.world.getTerrainValue(Math.floor(this.pos.x), Math.floor(this.pos.y));
 
     if (terrainValue > 0) {
-      this.pos.x = this.lastPos.x;
-      this.pos.y = this.lastPos.y;
+      this.pos.x = Math.floor(this.lastPos.x);
+      this.pos.y = Math.floor(this.lastPos.y);
       this.rotation += Math.PI;
       this.desiredRotation = this.rotation;
     }
   }
 
   dropPheromone(type: PheromoneType, strength?: number) {
-    const pheromone = new Pheromone(
-      type,
-      this.pos.copy(),
-      this.world,
-      this.noise,
-      strength
-    );
+    const pheromone = new Pheromone(type, this.pos.copy(), this.world, this.noise, strength);
     this.world.insert(pheromone, "Pheromone");
   }
 
   updateSensorRects() {
     const thetas = [
-      // Left sensor
-      this.pheromoneSensorAngle,
-      // Front sensor
-      0,
-      // Right sensor
-      Math.PI * 2 - this.pheromoneSensorAngle,
+      this.pheromoneSensorAngle, // Left sensor
+      0, // Front sensor
+      Math.PI * 2 - this.pheromoneSensorAngle, // Right sensor
     ] as const;
 
     this.sensorRects = thetas.map((theta) => {
-      const sensorPosition = Vector.fromPolar(
-        theta + this.rotation
-        // theta + this.rotation
-      )
+      const sensorPosition = Vector.fromPolar(theta + this.rotation)
         .mult(this.pheromoneSensorDistance)
         .add(this.pos.copy());
 
@@ -250,49 +199,88 @@ export default class Ant extends Entity implements StateMachine {
     }) as [Rectangle, Rectangle, Rectangle];
   }
 
+  wiggle(step: number) {
+    // scalar function applied to the current step to reduce scale of noise steps;
+    const steerStep = step * this.wiggleVariance;
+
+    this.desiredRotation += map(
+      this.noise(steerStep + 100 * this.id, steerStep + 200 * this.id),
+      -1,
+      1,
+      -this.wiggleRange,
+      this.wiggleRange
+    );
+  }
+
+  turnRandomDirection() {
+    if (Math.random() <= this.turnChance) {
+      this.desiredRotation += map(Math.random(), 0, 1, -this.turnRange, this.turnRange);
+    }
+  }
+
+  detectFood(): [number, number, number] {
+    return this.sensorRects.map((sensorRect) => {
+      const foods = this.world.query<Food>(
+        new Rectangle(sensorRect.x, sensorRect.y, this.pheromoneSensorRadius / 2, this.pheromoneSensorRadius / 2),
+        "Food"
+      );
+
+      // Add up all the strength values of detected food
+      return foods.reduce((sensorStrength, food) => sensorStrength + food.quantity, 0);
+    }) as [number, number, number];
+  }
+
   detectPheromone(type: PheromoneType): [number, number, number] {
     return this.sensorRects.map((sensorRect) => {
       const pheromones = this.world
         .query<Pheromone>(
-          new Rectangle(
-            sensorRect.x,
-            sensorRect.y,
-            this.pheromoneSensorRadius / 2,
-            this.pheromoneSensorRadius / 2
-          ),
+          new Rectangle(sensorRect.x, sensorRect.y, this.pheromoneSensorRadius / 2, this.pheromoneSensorRadius / 2),
           "Pheromone"
         )
         .filter((p) => p.type === type);
 
       // Add up all the strength values of detected pheromones
-      return pheromones.reduce(
-        (sensorStrength, pheromone) => sensorStrength + pheromone.strength,
-        0
-      );
+      return pheromones.reduce((sensorStrength, pheromone) => sensorStrength + pheromone.strength, 0);
     }) as [number, number, number];
   }
 
-  followPheromone(type: PheromoneType) {
-    const [left, front, right] = this.detectPheromone(type);
+  followFood(): boolean {
+    const [left, front, right] = this.detectFood();
     if (front > left && front > right) {
-      // go straight
     } else if (front < left && front < right) {
-      this.desiredRotation +=
-        left < right ? this.pheromoneSteerAngle : -this.pheromoneSteerAngle;
+      this.desiredRotation += left < right ? this.pheromoneSteerAngle : -this.pheromoneSteerAngle;
     } else if (left < right) {
       this.desiredRotation -= this.pheromoneSteerAngle;
     } else if (right < left) {
       this.desiredRotation += this.pheromoneSteerAngle;
     }
+
+    // Return true if we detected any food
+    return left + front + right > 0;
+  }
+
+  followPheromone(type: PheromoneType): boolean {
+    const [left, front, right] = this.detectPheromone(type);
+    if (front > left && front > right) {
+    } else if (front < left && front < right) {
+      this.desiredRotation += left < right ? this.pheromoneSteerAngle : -this.pheromoneSteerAngle;
+    } else if (left < right) {
+      this.desiredRotation -= this.pheromoneSteerAngle;
+    } else if (right < left) {
+      this.desiredRotation += this.pheromoneSteerAngle;
+    }
+
+    // Return true if we detected any pheromones
+    return left + front + right > 0;
   }
 }
 
 export class AntFactory {
-  readonly noise: Noise;
+  readonly noise: NoiseFunc;
   readonly world: World;
   private index: number;
 
-  constructor(world: World, noise: Noise) {
+  constructor(world: World, noise: NoiseFunc) {
     this.world = world;
     this.noise = noise;
     this.index = 1;

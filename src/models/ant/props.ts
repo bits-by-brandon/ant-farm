@@ -1,7 +1,7 @@
 /**
  * Map of all UI accessible properties of entity. If you want to add a new property to the UI, add it to this list.
  */
-import Ant from "./index";
+import type Ant from "./index";
 
 const AntProps: UiPropList<Ant> = [
   {
@@ -62,7 +62,7 @@ const AntProps: UiPropList<Ant> = [
     min: 0,
     max: 1,
     increment: 0.01,
-    initialValue: 0.1,
+    initialValue: 0.8,
   },
   {
     propKey: "foodDetectionRange",
@@ -93,7 +93,7 @@ const AntProps: UiPropList<Ant> = [
     min: 1,
     max: 16,
     increment: 1,
-    initialValue: 4,
+    initialValue: 6,
     group: "pheromones",
   },
   {
@@ -104,7 +104,7 @@ const AntProps: UiPropList<Ant> = [
     min: 1,
     max: 20,
     increment: 1,
-    initialValue: 7,
+    initialValue: 9,
     group: "pheromones",
   },
   {
@@ -128,7 +128,7 @@ const AntProps: UiPropList<Ant> = [
     min: 0,
     max: 2,
     increment: 0.0001,
-    initialValue: 1.0472,
+    initialValue: 0.7,
     group: "pheromones",
   },
 ];

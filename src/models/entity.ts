@@ -5,10 +5,10 @@ export default abstract class Entity implements Updatable {
   static type = "GenericEntity";
 
   readonly world: World;
-  noise: Noise;
+  noise: NoiseFunc;
   pos: Vector;
 
-  protected constructor(pos: Vector, world: World, noise: Noise) {
+  protected constructor(pos: Vector, world: World, noise: NoiseFunc) {
     this.pos = pos;
     this.world = world;
     this.noise = noise;

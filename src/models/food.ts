@@ -7,7 +7,7 @@ interface FoodConstructor {
   x: number;
   y: number;
   world: World;
-  noise: Noise;
+  noise: NoiseFunc;
   quantity?: number;
 }
 
@@ -36,10 +36,10 @@ export default class Food extends Entity {
 }
 
 export class FoodFactory {
-  readonly noise: Noise;
+  readonly noise: NoiseFunc;
   readonly world: World;
 
-  constructor(world: World, noise: Noise) {
+  constructor(world: World, noise: NoiseFunc) {
     this.world = world;
     this.noise = noise;
   }

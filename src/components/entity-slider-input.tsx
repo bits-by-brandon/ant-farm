@@ -3,9 +3,7 @@ import SliderInput, { SliderInputProps } from "./slider-input";
 import { useContext, useEffect } from "react";
 import { SimulationContext } from "./simulation-context";
 
-export interface EntitySliderInputProps<T>
-  extends Pick<SliderInputProps, "disabled">,
-    UiRangeProp<T> {
+export interface EntitySliderInputProps<T> extends Pick<SliderInputProps, "disabled">, UiRangeProp<T> {
   layerId: string;
   atomFamily: (param: keyof T) => RecoilState<number | boolean>;
 }
@@ -25,7 +23,7 @@ export default function EntitySliderInput<T>({
   const id = propKey.toString();
 
   if (typeof value !== "number") {
-    throw new Error(`Type mismatch for given prop. Prop ${propKey} is expected to be a number, but instead is a ${typeof value}.
+    throw new Error(`Type mismatch for given prop. Prop ${propKey.toString()} is expected to be a number, but instead is a ${typeof value}.
 Check the value of the props.ts file, or pass the prop to a different
 `);
   }
@@ -33,9 +31,7 @@ Check the value of the props.ts file, or pass the prop to a different
   useEffect(() => {
     if (!simulation) return;
     if (!simulation.setProp(layerId, propKey, value)) {
-      throw new Error(
-        `Setting prop ${propKey} in layer ${layerId} to ${value} was unsuccessful.`
-      );
+      throw new Error(`Setting prop ${propKey.toString()} in layer ${layerId} to ${value} was unsuccessful.`);
     }
   }, [value]);
 

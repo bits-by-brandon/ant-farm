@@ -12,9 +12,9 @@ export interface ISimulationContext {
   simulationState: SimulationState;
   stop: () => void;
   start: () => void;
-  setSimulationProps: React.Dispatch<
-    React.SetStateAction<SimulationCreateProps | null>
-  >;
+  setZoom: (zoom: number) => void;
+  moveViewport: (x: number, y: number) => void;
+  setSimulationProps: React.Dispatch<React.SetStateAction<SimulationCreateProps | null>>;
 }
 
 class SimulationContextInitError extends Error {
@@ -32,20 +32,22 @@ export const SimulationContext = React.createContext<ISimulationContext>({
   start: () => {
     throw new SimulationContextInitError("start");
   },
+  setZoom: () => {
+    throw new SimulationContextInitError("setZoom");
+  },
+  moveViewport: () => {
+    throw new SimulationContextInitError("setZoom");
+  },
   setSimulationProps: () => {
     throw new SimulationContextInitError("setSimulationProps");
   },
 });
 
-export function SimulationContextProvider({
-  children,
-}: SimulationContextProviderProps) {
+export function SimulationContextProvider({ children }: SimulationContextProviderProps) {
   const simulationRef = useRef<Simulation | null>(null);
   const [initialized, setInitialized] = useState<boolean>(false);
-  const [simulationState, setSimulationState] =
-    useState<SimulationState>("uninitialized");
-  const [simulationProps, setSimulationProps] =
-    useState<SimulationCreateProps | null>(null);
+  const [simulationState, setSimulationState] = useState<SimulationState>("uninitialized");
+  const [simulationProps, setSimulationProps] = useState<SimulationCreateProps | null>(null);
 
   function stop() {
     if (initialized && simulationRef.current && simulationState === "playing") {
@@ -73,6 +75,16 @@ export function SimulationContextProvider({
     setSimulationState("playing");
   }
 
+  function setZoom(zoom: number) {
+    if (!simulationRef.current) return;
+    simulationRef.current.zoom(zoom);
+  }
+
+  function moveViewport(x: number, y: number) {
+    if (!simulationRef.current) return;
+    simulationRef.current.moveViewport(x, y);
+  }
+
   async function initializeSimulation(props: SimulationCreateProps) {
     const simulation = await Simulation.create(props);
     simulation.subscribe("start", handleSimulationStart);
@@ -97,6 +109,8 @@ export function SimulationContextProvider({
         simulation: simulationRef.current,
         setSimulationProps,
         simulationState,
+        setZoom,
+        moveViewport,
         stop,
         start,
       }}

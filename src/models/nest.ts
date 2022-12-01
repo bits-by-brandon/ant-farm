@@ -8,7 +8,7 @@ interface NestConstructor {
   y: number;
   id: number;
   world: World;
-  noise: Noise;
+  noise: NoiseFunc;
 }
 
 export default class Nest extends Entity {
@@ -19,7 +19,7 @@ export default class Nest extends Entity {
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = "#333";
-    ctx.fillRect(this.pos.x - 5, this.pos.y - 5, 10, 10);
+    ctx.fillRect(this.pos.x - 10, this.pos.y - 10, 20, 20);
   }
 
   constructor(args: NestConstructor) {

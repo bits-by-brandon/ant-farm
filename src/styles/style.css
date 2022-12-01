@@ -30,14 +30,20 @@ body {
   width: 0;
 }
 
+.main-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+}
+
 .controls {
   --vertical-padding: 12px;
 
   overflow-y: scroll;
+  flex-shrink: 0;
   top: 0;
-  position: fixed;
   height: 100%;
-  width: 320px;
+  flex-basis: 320px;
   display: flex;
   flex-direction: column;
   padding: 12px var(--vertical-padding) 100px;
@@ -220,9 +226,5 @@ body {
 }
 
 #main-canvas {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 0;
+  display: block;
 }

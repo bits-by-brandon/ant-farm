@@ -1,6 +1,5 @@
 import { State } from "../../state";
 import Ant from "../index";
-import map from "../../../util/map";
 import Food from "../../food";
 import Pheromone, { PheromoneType } from "../../pheromone";
 import { Rectangle } from "../../../lib/rectangle";
@@ -20,14 +19,19 @@ export class Foraging implements State {
   exit() {}
 
   update(step: number) {
-    this.homeStrength -= Pheromone.decayRate;
-    this.turnRandomDirection(step);
+    this.homeStrength -= Pheromone.evaporationRate - 0.04;
+
+    const foundFood = this.parent.followFood();
+    if (!foundFood) {
+      this.parent.followPheromone(PheromoneType.Food);
+    }
+    this.parent.turnRandomDirection();
+    this.parent.wiggle(step);
     this.parent.updatePosition();
     this.parent.terrainCollide();
     this.parent.mapEdgeCollide();
     this.parent.updateGridPosition();
     this.parent.updateSensorRects();
-    this.parent.followPheromone(PheromoneType.Food);
     this.parent.updatePheromone(() => {
       this.parent.dropPheromone(PheromoneType.Home, this.homeStrength);
     });
@@ -35,8 +39,6 @@ export class Foraging implements State {
     // Check if food shares tile with ant, if so:
     const food = this.checkForFood();
     if (food) {
-      // turn around
-      this.parent.desiredRotation += Math.PI;
       food.take();
       this.parent.held = true;
       // start returning with the food
@@ -45,7 +47,7 @@ export class Foraging implements State {
   }
 
   checkForFood(): Food | null {
-    const food = this.parent.world.query(
+    const food = this.parent.world.query<Food>(
       new Rectangle(
         this.parent.pos.x,
         this.parent.pos.y,
@@ -53,35 +55,8 @@ export class Foraging implements State {
         this.parent.foodDetectionRange
       ),
       "Food"
-    ) as Food[];
+    );
 
     return food[0] || null;
-  }
-
-  turnRandomDirection(step: number) {
-    // scalar function applied to the current step to reduce scale of noise steps;
-    const steerStep = step * this.parent.wiggleVariance;
-
-    if (Math.random() <= this.parent.turnChance) {
-      this.parent.desiredRotation += map(
-        Math.random(),
-        0,
-        1,
-        -this.parent.turnRange,
-        this.parent.turnRange
-      );
-    }
-
-    // TODO: Update random walk to levy flight walk
-    this.parent.desiredRotation += map(
-      this.parent.noise(
-        steerStep + 100 * this.parent.id,
-        steerStep + 200 * this.parent.id
-      ),
-      -1,
-      1,
-      -this.parent.wiggleRange,
-      this.parent.wiggleRange
-    );
   }
 }

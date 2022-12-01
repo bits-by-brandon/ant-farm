@@ -13,22 +13,28 @@ export default class Pheromone extends Entity {
   type: PheromoneType;
 
   static maxStrength = 100;
-  static decayRate = 0.15;
+  static evaporationRate = 0.15;
 
-  constructor(type: PheromoneType, pos: Vector, world: World, noise: Noise, strength?: number) {
+  constructor(
+    type: PheromoneType,
+    pos: Vector,
+    world: World,
+    noise: NoiseFunc,
+    strength?: number
+  ) {
     super(pos, world, noise);
     this.strength = strength || Pheromone.maxStrength;
     this.type = type;
   }
 
   update() {
-    this.strength -= Pheromone.decayRate;
+    this.strength -= Pheromone.evaporationRate;
 
     if (this.strength <= 0) this.world.remove(this, "Pheromone");
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    const alphaValue = map(this.strength, 0, 100, 0, 1);
+    const alphaValue = map(this.strength, 0, 100, 0, 0.3);
 
     switch (this.type) {
       case PheromoneType.Food:
